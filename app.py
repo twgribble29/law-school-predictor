@@ -38,6 +38,10 @@ school_list = selectivity_rankings.index.tolist()
 with open(os.path.join(MODEL_DIR, 'school_stats.json'), 'r') as f:
     school_stats = json.load(f)
 
+# Load pre-computed school profiles (scatter data + metrics)
+with open(os.path.join(MODEL_DIR, 'school_profiles.json'), 'r') as f:
+    school_profiles = json.load(f)
+
 # T14 schools (by selectivity ranking)
 T14 = school_list[:14]
 
@@ -231,8 +235,64 @@ def predict():
 
 
 @app.route('/schools')
-def get_schools():
-    return jsonify(schools_data)
+def schools_page():
+    """Render the School Profiles page."""
+    return render_template('schools.html',
+                           schools_json=json.dumps(schools_data),
+                           t14_json=json.dumps(T14))
+
+
+@app.route('/api/school-profile/<school_name>')
+def get_school_profile(school_name):
+    """Return scatter data, metrics, and probability contours for one school."""
+    if school_name not in school_profiles:
+        return jsonify({'error': 'School not found'}), 404
+
+    profile = school_profiles[school_name]
+    stats = school_stats.get(school_name, {})
+    domain = SCHOOL_DOMAINS.get(school_name, '')
+    contours = generate_contours(school_name)
+
+    return jsonify({
+        'school': school_name,
+        'scatter': profile['scatter'],
+        'metrics': profile['metrics'],
+        'n_total': profile.get('n_total', 0),
+        'stats': stats,
+        'domain': domain,
+        'is_t14': school_name in T14,
+        'contours': contours
+    })
+
+
+def generate_contours(school_name):
+    """Generate probability grid for contour overlay using the baseline model."""
+    sel = selectivity_rankings.loc[school_name, 'selectivity']
+    baseline_cols = feature_info['baseline_features']
+
+    lsat_range = list(range(140, 181))  # 41 points
+    gpa_range = [round(2.5 + i * 0.05, 2) for i in range(31)]  # 31 points
+
+    # Build all feature rows at once for batch prediction
+    rows = []
+    for lsat in lsat_range:
+        for gpa in gpa_range:
+            rows.append([
+                lsat, gpa, 90, 0, 0, sel, 2025, 0,
+                lsat * sel, gpa * sel, 90 * sel
+            ])
+
+    features = pd.DataFrame(rows, columns=baseline_cols)
+    probs = non_urm_baseline_model.predict_proba(features)[:, 1]
+
+    # Reshape into 2D grid (lsat rows x gpa cols)
+    prob_grid = probs.reshape(len(lsat_range), len(gpa_range))
+
+    return {
+        'lsat': lsat_range,
+        'gpa': gpa_range,
+        'z': [[round(float(p), 3) for p in row] for row in prob_grid]
+    }
 
 
 if __name__ == '__main__':

@@ -1,0 +1,384 @@
+{% extends "base.html" %}
+{% block title %}School Profiles - Law School Predictor{% endblock %}
+
+{% block content %}
+<div class="container">
+    <header class="hero">
+        <h1>School Profiles</h1>
+        <p class="subtitle">Explore admissions data, outcome patterns, and metrics for 193 ABA-accredited law schools</p>
+    </header>
+
+    <!-- Search Card -->
+    <section class="card">
+        <h2 class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            Find a School
+        </h2>
+        <div class="school-search-wrap">
+            <input type="text" id="profile-search" placeholder="Search for a school..." class="school-search">
+            <div id="profile-dropdown" class="school-dropdown"></div>
+        </div>
+    </section>
+
+    <!-- T14 Grid -->
+    <section class="card">
+        <h2 class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            Top 14 Law Schools
+        </h2>
+        <div class="school-grid" id="t14-grid"></div>
+    </section>
+
+    <!-- Profile Modal -->
+    <div id="profile-modal" class="profile-modal">
+        <div class="profile-modal-content">
+            <button class="profile-close" id="profile-close-btn">&times;</button>
+
+            <!-- Loading state -->
+            <div id="profile-loading" class="profile-loading">
+                <svg class="spinner" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="32" height="32"><circle cx="12" cy="12" r="10" stroke-dasharray="60" stroke-dashoffset="20"/></svg>
+                <span>Loading profile...</span>
+            </div>
+
+            <!-- Profile content (hidden until loaded) -->
+            <div id="profile-content" style="display:none">
+                <div class="profile-header">
+                    <img id="profile-logo" class="profile-logo" alt="" onerror="this.style.display='none'">
+                    <div>
+                        <h2 id="profile-school-name"></h2>
+                        <div class="profile-stats-row">
+                            <span class="profile-stat-pill">Median LSAT: <strong id="profile-lsat"></strong></span>
+                            <span class="profile-stat-pill">Median GPA: <strong id="profile-gpa"></strong></span>
+                            <span class="profile-stat-pill"><strong id="profile-n"></strong> applicants in dataset</span>
+                            <span id="profile-t14-badge" class="t14-badge" style="display:none">T14</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Scatter Plot -->
+                <div class="profile-section">
+                    <h3>Admissions Outcomes</h3>
+                    <p class="helper-text" style="margin-bottom:12px">Each dot is a historical applicant. Background shading shows model-predicted acceptance probability.</p>
+                    <div id="scatter-plot"></div>
+                </div>
+
+                <!-- Metrics -->
+                <div class="profile-section">
+                    <h3>School Characteristics</h3>
+                    <div class="metrics-grid-3">
+                        <div class="metric-card-profile">
+                            <div class="metric-card-header">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
+                                Holistic Review
+                            </div>
+                            <div class="metric-value-profile" id="metric-holistic">--</div>
+                            <div class="metric-bar-bg"><div class="metric-bar holistic" id="metric-holistic-bar"></div></div>
+                            <div class="metric-desc">Higher = outcomes vary more for similar stats, suggesting factors beyond numbers matter</div>
+                        </div>
+                        <div class="metric-card-profile">
+                            <div class="metric-card-header">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+                                Splitter Friendly
+                            </div>
+                            <div class="metric-value-profile" id="metric-splitter">--</div>
+                            <div class="metric-bar-bg"><div class="metric-bar splitter" id="metric-splitter-bar"></div></div>
+                            <div class="metric-desc">Higher = high LSAT / low GPA applicants are accepted at higher rates relative to baseline</div>
+                        </div>
+                        <div class="metric-card-profile">
+                            <div class="metric-card-header">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg>
+                                Reverse Splitter
+                            </div>
+                            <div class="metric-value-profile" id="metric-reverse">--</div>
+                            <div class="metric-bar-bg"><div class="metric-bar reverse" id="metric-reverse-bar"></div></div>
+                            <div class="metric-desc">Higher = high GPA / low LSAT applicants are accepted at higher rates relative to baseline</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+<script>
+const ALL_SCHOOLS = {{ schools_json | safe }};
+const T14_NAMES = {{ t14_json | safe }};
+
+// ── T14 Grid ──────────────────────────────────────────────────────
+function renderT14Grid() {
+    const grid = document.getElementById('t14-grid');
+    T14_NAMES.forEach(name => {
+        const school = ALL_SCHOOLS.find(s => s.name === name);
+        if (!school) return;
+        const card = document.createElement('div');
+        card.className = 'school-card';
+        const logoUrl = school.domain
+            ? `https://www.google.com/s2/favicons?domain=${school.domain}&sz=128`
+            : '';
+        card.innerHTML = `
+            ${logoUrl ? `<img src="${logoUrl}" class="school-card-logo" alt="" onerror="this.style.display='none'">` : '<div class="school-card-logo-placeholder"></div>'}
+            <div class="school-card-name">${school.name}</div>
+            <div class="school-card-meta">LSAT ${school.lsat_median} &middot; GPA ${school.gpa_median}</div>
+        `;
+        card.addEventListener('click', () => loadProfile(school.name));
+        grid.appendChild(card);
+    });
+}
+
+// ── Search ────────────────────────────────────────────────────────
+const searchInput = document.getElementById('profile-search');
+const dropdown = document.getElementById('profile-dropdown');
+
+searchInput.addEventListener('input', function() {
+    const query = this.value.toLowerCase().trim();
+    dropdown.innerHTML = '';
+    if (query.length < 2) { dropdown.style.display = 'none'; return; }
+
+    const matches = ALL_SCHOOLS.filter(s =>
+        s.name.toLowerCase().includes(query)
+    ).slice(0, 10);
+
+    if (matches.length === 0) { dropdown.style.display = 'none'; return; }
+
+    matches.forEach(school => {
+        const item = document.createElement('div');
+        item.className = 'dropdown-item';
+        const logoUrl = school.domain
+            ? `https://www.google.com/s2/favicons?domain=${school.domain}&sz=32`
+            : '';
+        item.innerHTML = `
+            ${logoUrl ? `<img src="${logoUrl}" class="school-icon-sm" alt="" onerror="this.style.display='none'">` : '<span class="school-icon-placeholder-sm"></span>'}
+            <span class="dropdown-name">${school.name}</span>
+            ${school.is_t14 ? '<span class="t14-badge">T14</span>' : ''}
+        `;
+        item.addEventListener('click', () => {
+            loadProfile(school.name);
+            searchInput.value = '';
+            dropdown.style.display = 'none';
+        });
+        dropdown.appendChild(item);
+    });
+    dropdown.style.display = 'block';
+});
+
+searchInput.addEventListener('blur', () => setTimeout(() => dropdown.style.display = 'none', 200));
+
+// ── Profile Modal ─────────────────────────────────────────────────
+const modal = document.getElementById('profile-modal');
+const closeBtn = document.getElementById('profile-close-btn');
+
+closeBtn.addEventListener('click', closeProfile);
+modal.addEventListener('click', (e) => {
+    if (e.target === modal) closeProfile();
+});
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeProfile();
+});
+
+function closeProfile() {
+    modal.style.display = 'none';
+    document.body.style.overflow = '';
+}
+
+async function loadProfile(schoolName) {
+    // Show modal with loading state
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    document.getElementById('profile-loading').style.display = 'flex';
+    document.getElementById('profile-content').style.display = 'none';
+
+    try {
+        const res = await fetch(`/api/school-profile/${encodeURIComponent(schoolName)}`);
+        if (!res.ok) throw new Error('School not found');
+        const data = await res.json();
+        renderProfile(data);
+    } catch (err) {
+        closeProfile();
+        alert('Error loading profile: ' + err.message);
+    }
+}
+
+function renderProfile(data) {
+    document.getElementById('profile-loading').style.display = 'none';
+    document.getElementById('profile-content').style.display = 'block';
+
+    // Header
+    const school = ALL_SCHOOLS.find(s => s.name === data.school);
+    document.getElementById('profile-school-name').textContent = data.school;
+    document.getElementById('profile-lsat').textContent = data.stats.lsat_50 || 'N/A';
+    document.getElementById('profile-gpa').textContent = data.stats.gpa_50 || 'N/A';
+    document.getElementById('profile-n').textContent = data.n_total.toLocaleString();
+
+    const badge = document.getElementById('profile-t14-badge');
+    badge.style.display = data.is_t14 ? 'inline-block' : 'none';
+
+    if (data.domain) {
+        const logo = document.getElementById('profile-logo');
+        logo.src = `https://www.google.com/s2/favicons?domain=${data.domain}&sz=128`;
+        logo.style.display = 'block';
+    } else {
+        document.getElementById('profile-logo').style.display = 'none';
+    }
+
+    // Metrics
+    setMetric('holistic', data.metrics.holistic);
+    setMetric('splitter', data.metrics.splitter);
+    setMetric('reverse', data.metrics.reverse_splitter);
+
+    // Scatter plot
+    renderScatterPlot(data);
+}
+
+function setMetric(id, value) {
+    const el = document.getElementById(`metric-${id}`);
+    const bar = document.getElementById(`metric-${id}-bar`);
+    if (value === null || value === undefined) {
+        el.textContent = 'N/A';
+        el.classList.add('na');
+        bar.style.width = '0%';
+    } else {
+        el.textContent = `${value}th`;
+        el.classList.remove('na');
+        bar.style.width = `${value}%`;
+    }
+}
+
+// ── Scatter Plot ──────────────────────────────────────────────────
+function renderScatterPlot(data) {
+    const scatter = data.scatter || [];
+    const accepted = scatter.filter(d => d.r === 'A');
+    const waitlisted = scatter.filter(d => d.r === 'W');
+    const rejected = scatter.filter(d => d.r === 'R');
+
+    const traces = [];
+
+    // Contour trace (probability heatmap)
+    if (data.contours) {
+        traces.push({
+            x: data.contours.gpa,
+            y: data.contours.lsat,
+            z: data.contours.z,
+            type: 'contour',
+            colorscale: [
+                [0, 'rgba(231,111,81,0.25)'],
+                [0.3, 'rgba(233,168,76,0.2)'],
+                [0.5, 'rgba(255,255,255,0.1)'],
+                [0.7, 'rgba(45,155,131,0.2)'],
+                [1, 'rgba(45,155,131,0.4)']
+            ],
+            showscale: true,
+            colorbar: {
+                title: { text: 'P(Admit)', font: { size: 11, family: 'Inter, sans-serif' } },
+                tickformat: '.0%',
+                len: 0.6,
+                thickness: 12,
+                outlinewidth: 0
+            },
+            contours: {
+                coloring: 'heatmap',
+                showlines: true,
+                showlabels: true,
+                labelfont: { size: 10, color: '#6B7F75' },
+                size: 0.1,
+                start: 0.1,
+                end: 0.9
+            },
+            line: { color: 'rgba(180,199,191,0.5)', width: 1 },
+            hovertemplate: 'GPA: %{x:.2f}<br>LSAT: %{y}<br>P(Admit): %{z:.0%}<extra></extra>'
+        });
+    }
+
+    // Rejected (render first so they appear behind)
+    traces.push({
+        x: rejected.map(d => d.g),
+        y: rejected.map(d => d.l),
+        mode: 'markers',
+        type: 'scatter',
+        name: 'Rejected',
+        marker: {
+            color: 'rgba(231,111,81,0.65)',
+            size: 5.5,
+            line: { color: 'rgba(255,255,255,0.6)', width: 0.5 }
+        },
+        hovertemplate: 'GPA: %{x:.2f}<br>LSAT: %{y}<br>Rejected<extra></extra>'
+    });
+
+    // Waitlisted
+    traces.push({
+        x: waitlisted.map(d => d.g),
+        y: waitlisted.map(d => d.l),
+        mode: 'markers',
+        type: 'scatter',
+        name: 'Waitlisted',
+        marker: {
+            color: 'rgba(233,168,76,0.7)',
+            size: 5.5,
+            line: { color: 'rgba(255,255,255,0.6)', width: 0.5 }
+        },
+        hovertemplate: 'GPA: %{x:.2f}<br>LSAT: %{y}<br>Waitlisted<extra></extra>'
+    });
+
+    // Accepted (on top)
+    traces.push({
+        x: accepted.map(d => d.g),
+        y: accepted.map(d => d.l),
+        mode: 'markers',
+        type: 'scatter',
+        name: 'Accepted',
+        marker: {
+            color: 'rgba(45,155,131,0.7)',
+            size: 5.5,
+            line: { color: 'rgba(255,255,255,0.6)', width: 0.5 }
+        },
+        hovertemplate: 'GPA: %{x:.2f}<br>LSAT: %{y}<br>Accepted<extra></extra>'
+    });
+
+    const layout = {
+        xaxis: {
+            title: { text: 'GPA', font: { size: 13, family: 'Inter, sans-serif' } },
+            range: [2.2, 4.15],
+            gridcolor: '#EBF0ED',
+            zeroline: false,
+            tickfont: { size: 11 }
+        },
+        yaxis: {
+            title: { text: 'LSAT', font: { size: 13, family: 'Inter, sans-serif' } },
+            range: [139, 181],
+            gridcolor: '#EBF0ED',
+            zeroline: false,
+            tickfont: { size: 11 }
+        },
+        plot_bgcolor: 'white',
+        paper_bgcolor: 'white',
+        font: { family: 'Inter, sans-serif' },
+        margin: { l: 55, r: 70, t: 10, b: 50 },
+        hovermode: 'closest',
+        showlegend: true,
+        legend: {
+            x: 0.01, y: 0.99,
+            bgcolor: 'rgba(255,255,255,0.85)',
+            bordercolor: '#D4E0DB',
+            borderwidth: 1,
+            font: { size: 11 }
+        },
+        height: 500
+    };
+
+    const config = {
+        responsive: true,
+        displayModeBar: true,
+        modeBarButtonsToRemove: ['lasso2d', 'select2d', 'autoScale2d'],
+        displaylogo: false
+    };
+
+    Plotly.newPlot('scatter-plot', traces, layout, config);
+}
+
+// ── Initialize ────────────────────────────────────────────────────
+renderT14Grid();
+</script>
+{% endblock %}

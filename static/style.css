@@ -904,6 +904,254 @@ body {
     margin: 0 auto;
 }
 
+/* ── School Profiles Page ──────────────────────────────────────── */
+
+.school-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+    margin-top: 16px;
+}
+
+.school-card {
+    background: var(--white);
+    border: 1.5px solid var(--gray-200);
+    border-radius: var(--radius-md);
+    padding: 20px 16px;
+    text-align: center;
+    cursor: pointer;
+    transition: all var(--transition);
+}
+
+.school-card:hover {
+    border-color: var(--green-500);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-3px);
+}
+
+.school-card-logo {
+    width: 48px;
+    height: 48px;
+    margin: 0 auto 10px;
+    border-radius: 8px;
+    display: block;
+}
+
+.school-card-logo-placeholder {
+    width: 48px;
+    height: 48px;
+    margin: 0 auto 10px;
+    border-radius: 8px;
+    background: var(--gray-100);
+}
+
+.school-card-name {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--gray-900);
+    margin-bottom: 4px;
+    line-height: 1.3;
+    min-height: 2.3em;
+}
+
+.school-card-meta {
+    font-size: 0.75rem;
+    color: var(--gray-400);
+}
+
+/* ── Profile Modal ─────────────────────────────────────────────── */
+
+.profile-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(10, 46, 34, 0.75);
+    z-index: 1000;
+    overflow-y: auto;
+    padding: 40px 20px;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.profile-modal-content {
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    max-width: 960px;
+    width: 100%;
+    padding: 32px;
+    position: relative;
+    box-shadow: var(--shadow-lg);
+    animation: modalIn 0.25s ease;
+    min-height: 200px;
+}
+
+@keyframes modalIn {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.profile-close {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 36px;
+    height: 36px;
+    background: var(--gray-100);
+    border: none;
+    border-radius: 50%;
+    font-size: 1.3rem;
+    color: var(--gray-500);
+    cursor: pointer;
+    transition: all var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+.profile-close:hover {
+    background: var(--coral-100);
+    color: var(--coral-500);
+}
+
+.profile-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 60px 0;
+    color: var(--gray-400);
+    font-size: 0.9rem;
+}
+
+.profile-header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 28px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid var(--gray-100);
+}
+
+.profile-logo {
+    width: 72px;
+    height: 72px;
+    border-radius: 12px;
+    flex-shrink: 0;
+}
+
+.profile-header h2 {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--green-800);
+    margin: 0 0 8px 0;
+}
+
+.profile-stats-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+}
+
+.profile-stat-pill {
+    font-size: 0.82rem;
+    color: var(--gray-500);
+    background: var(--gray-50);
+    padding: 3px 10px;
+    border-radius: 20px;
+    border: 1px solid var(--gray-200);
+}
+
+.profile-stat-pill strong {
+    color: var(--green-600);
+    font-weight: 600;
+}
+
+.profile-section {
+    margin-bottom: 28px;
+}
+
+.profile-section h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--green-700);
+    margin-bottom: 12px;
+    padding-bottom: 6px;
+    border-bottom: 2px solid var(--green-100);
+}
+
+/* ── Metrics Cards ─────────────────────────────────────────────── */
+
+.metrics-grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+}
+
+.metric-card-profile {
+    background: var(--green-50);
+    border: 1px solid var(--green-200);
+    border-radius: var(--radius-md);
+    padding: 18px;
+}
+
+.metric-card-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--gray-700);
+    margin-bottom: 10px;
+}
+
+.metric-card-header svg {
+    color: var(--green-500);
+    flex-shrink: 0;
+}
+
+.metric-value-profile {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--green-600);
+    margin-bottom: 8px;
+    line-height: 1;
+}
+
+.metric-value-profile.na {
+    color: var(--gray-400);
+    font-size: 1.2rem;
+}
+
+.metric-bar-bg {
+    width: 100%;
+    height: 6px;
+    background: var(--gray-200);
+    border-radius: 3px;
+    margin-bottom: 10px;
+    overflow: hidden;
+}
+
+.metric-bar {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.metric-bar.holistic { background: var(--green-500); }
+.metric-bar.splitter { background: var(--amber-500); }
+.metric-bar.reverse  { background: var(--coral-500); }
+
+.metric-desc {
+    font-size: 0.72rem;
+    color: var(--gray-400);
+    line-height: 1.4;
+}
+
 /* ── Responsive ──────────────────────────────────────────────────── */
 
 @media (max-width: 640px) {
@@ -919,4 +1167,15 @@ body {
     .decision-row select { flex: 1 1 100%; }
     .about-profile { flex-direction: column; align-items: center; text-align: center; }
     .metrics-grid { grid-template-columns: 1fr 1fr; }
+
+    /* School profiles responsive */
+    .school-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .school-card { padding: 14px 10px; }
+    .school-card-name { font-size: 0.8rem; min-height: auto; }
+    .profile-modal { padding: 16px 10px; }
+    .profile-modal-content { padding: 24px 16px; }
+    .profile-header { flex-direction: column; text-align: center; }
+    .profile-header h2 { font-size: 1.3rem; }
+    .profile-stats-row { justify-content: center; }
+    .metrics-grid-3 { grid-template-columns: 1fr; }
 }
