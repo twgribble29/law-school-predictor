@@ -1,8 +1,11 @@
 """
-Law School Admissions Prediction Model - Model Training
-=========================================================
-This script trains baseline and enhanced Gradient Boosting models for prediction.
-Uses scikit-learn's HistGradientBoostingClassifier (fast, no OpenMP dependency).
+Law School Admissions Prediction Model - Model Training (v2)
+=============================================================
+Trains baseline and enhanced Gradient Boosting models with:
+  - Temporal weighting (exponential decay, recent cycles weighted more)
+  - Interaction features (LSAT*selectivity, GPA*selectivity, timing*selectivity)
+  - years_out as continuous feature
+Uses scikit-learn's HistGradientBoostingClassifier.
 """
 
 import pandas as pd
@@ -23,6 +26,9 @@ warnings.filterwarnings('ignore')
 DATA_DIR = "/Users/tygribble/Desktop/Law_Data/law_school_predictor/"
 MODEL_DIR = f"{DATA_DIR}models/"
 
+# Temporal weighting: how much to decay older cycles (0.9 = 10% per year)
+TEMPORAL_DECAY = 0.9
+
 # Ensure model directory exists
 os.makedirs(MODEL_DIR, exist_ok=True)
 
@@ -31,7 +37,7 @@ os.makedirs(MODEL_DIR, exist_ok=True)
 # =============================================================================
 
 print("=" * 70)
-print("LAW SCHOOL ADMISSIONS - MODEL TRAINING")
+print("LAW SCHOOL ADMISSIONS - MODEL TRAINING (v2)")
 print("=" * 70)
 
 # Load Non-URM data
@@ -50,13 +56,17 @@ selectivity_rankings = pd.read_csv(f"{MODEL_DIR}school_selectivity.csv", index_c
 print(f"Non-URM: Train={len(df_train):,}, Val={len(df_val):,}, Test={len(df_test):,}")
 print(f"URM: Train={len(df_urm_train):,}, Val={len(df_urm_val):,}, Test={len(df_urm_test):,}")
 print(f"Schools with selectivity rankings: {len(selectivity_rankings)}")
+print(f"Temporal decay factor: {TEMPORAL_DECAY}")
 
 # =============================================================================
 # FEATURE ENGINEERING
 # =============================================================================
 
 def prepare_baseline_features(df, selectivity_rankings):
-    """Prepare baseline features (stats only, no decision information)"""
+    """Prepare baseline features with v2 improvements:
+    - years_out as continuous (replaces binary has_work_experience)
+    - Interaction terms (LSAT*selectivity, GPA*selectivity, timing*selectivity)
+    """
     features = df[['lsat', 'gpa', 'app_timing_days', 'has_work_experience']].copy()
 
     # Add softs as numeric
@@ -68,12 +78,26 @@ def prepare_baseline_features(df, selectivity_rankings):
     # Add cycle year (to capture temporal drift)
     features['cycle_year'] = df['cycle_year']
 
+    # v2: years_out as continuous feature
+    features['years_out'] = pd.to_numeric(df['years_out'], errors='coerce').fillna(0)
+
+    # v2: interaction features
+    features['lsat_x_selectivity'] = features['lsat'] * features['school_selectivity']
+    features['gpa_x_selectivity'] = features['gpa'] * features['school_selectivity']
+    features['timing_x_selectivity'] = features['app_timing_days'] * features['school_selectivity']
+
     # Fill missing values with medians
     for col in features.columns:
         if features[col].isna().any():
             features[col] = features[col].fillna(features[col].median())
 
     return features
+
+
+def compute_temporal_weights(df, decay=TEMPORAL_DECAY):
+    """Compute exponential decay sample weights based on cycle year."""
+    max_year = df['cycle_year'].max()
+    return decay ** (max_year - df['cycle_year'])
 
 
 def prepare_enhanced_features_loo(df, selectivity_rankings, verbose=False):
@@ -157,13 +181,14 @@ def prepare_enhanced_features_loo(df, selectivity_rankings, verbose=False):
 # =============================================================================
 
 print("\n" + "=" * 70)
-print("TRAINING BASELINE MODELS (Stats Only)")
+print("TRAINING BASELINE MODELS (Stats Only, with Temporal Weighting)")
 print("=" * 70)
 
 # --- Non-URM Baseline ---
 print("\n--- Non-URM Baseline Model ---")
 X_train_baseline = prepare_baseline_features(df_train, selectivity_rankings)
 y_train = (df_train['result_clean'] == 'Accepted').astype(int)
+train_weights = compute_temporal_weights(df_train)
 
 X_val_baseline = prepare_baseline_features(df_val, selectivity_rankings)
 y_val = (df_val['result_clean'] == 'Accepted').astype(int)
@@ -171,19 +196,20 @@ y_val = (df_val['result_clean'] == 'Accepted').astype(int)
 X_test_baseline = prepare_baseline_features(df_test, selectivity_rankings)
 y_test = (df_test['result_clean'] == 'Accepted').astype(int)
 
-print(f"Feature columns: {list(X_train_baseline.columns)}")
+print(f"Feature columns ({len(X_train_baseline.columns)}): {list(X_train_baseline.columns)}")
 
 baseline_model = HistGradientBoostingClassifier(
-    max_iter=200,
+    max_iter=500,
     max_depth=6,
-    learning_rate=0.1,
+    learning_rate=0.05,
+    min_samples_leaf=20,
     random_state=42,
     early_stopping=True,
     validation_fraction=0.1,
-    n_iter_no_change=20
+    n_iter_no_change=30
 )
 
-baseline_model.fit(X_train_baseline, y_train)
+baseline_model.fit(X_train_baseline, y_train, sample_weight=train_weights)
 
 # Evaluate
 y_val_pred_baseline = baseline_model.predict_proba(X_val_baseline)[:, 1]
@@ -192,6 +218,7 @@ y_test_pred_baseline = baseline_model.predict_proba(X_test_baseline)[:, 1]
 auc_val_baseline = roc_auc_score(y_val, y_val_pred_baseline)
 auc_test_baseline = roc_auc_score(y_test, y_test_pred_baseline)
 
+print(f"Iterations used: {baseline_model.n_iter_}")
 print(f"Validation AUC: {auc_val_baseline:.4f}")
 print(f"2025 Test AUC:  {auc_test_baseline:.4f}")
 
@@ -199,6 +226,7 @@ print(f"2025 Test AUC:  {auc_test_baseline:.4f}")
 print("\n--- URM Baseline Model ---")
 X_urm_train_baseline = prepare_baseline_features(df_urm_train, selectivity_rankings)
 y_urm_train = (df_urm_train['result_clean'] == 'Accepted').astype(int)
+urm_train_weights = compute_temporal_weights(df_urm_train)
 
 X_urm_val_baseline = prepare_baseline_features(df_urm_val, selectivity_rankings)
 y_urm_val = (df_urm_val['result_clean'] == 'Accepted').astype(int)
@@ -207,16 +235,17 @@ X_urm_test_baseline = prepare_baseline_features(df_urm_test, selectivity_ranking
 y_urm_test = (df_urm_test['result_clean'] == 'Accepted').astype(int)
 
 urm_baseline_model = HistGradientBoostingClassifier(
-    max_iter=200,
+    max_iter=500,
     max_depth=6,
-    learning_rate=0.1,
+    learning_rate=0.05,
+    min_samples_leaf=20,
     random_state=42,
     early_stopping=True,
     validation_fraction=0.1,
-    n_iter_no_change=20
+    n_iter_no_change=30
 )
 
-urm_baseline_model.fit(X_urm_train_baseline, y_urm_train)
+urm_baseline_model.fit(X_urm_train_baseline, y_urm_train, sample_weight=urm_train_weights)
 
 y_urm_val_pred_baseline = urm_baseline_model.predict_proba(X_urm_val_baseline)[:, 1]
 y_urm_test_pred_baseline = urm_baseline_model.predict_proba(X_urm_test_baseline)[:, 1]
@@ -224,6 +253,7 @@ y_urm_test_pred_baseline = urm_baseline_model.predict_proba(X_urm_test_baseline)
 auc_urm_val_baseline = roc_auc_score(y_urm_val, y_urm_val_pred_baseline)
 auc_urm_test_baseline = roc_auc_score(y_urm_test, y_urm_test_pred_baseline)
 
+print(f"Iterations used: {urm_baseline_model.n_iter_}")
 print(f"Validation AUC: {auc_urm_val_baseline:.4f}")
 print(f"2025 Test AUC:  {auc_urm_test_baseline:.4f}")
 
@@ -232,7 +262,7 @@ print(f"2025 Test AUC:  {auc_urm_test_baseline:.4f}")
 # =============================================================================
 
 print("\n" + "=" * 70)
-print("TRAINING ENHANCED MODELS (With Decision Features)")
+print("TRAINING ENHANCED MODELS (With Decision Features + Temporal Weighting)")
 print("=" * 70)
 
 # --- Non-URM Enhanced ---
@@ -241,19 +271,20 @@ X_train_enhanced = prepare_enhanced_features_loo(df_train, selectivity_rankings,
 X_val_enhanced = prepare_enhanced_features_loo(df_val, selectivity_rankings, verbose=False)
 X_test_enhanced = prepare_enhanced_features_loo(df_test, selectivity_rankings, verbose=False)
 
-print(f"Enhanced feature columns: {list(X_train_enhanced.columns)}")
+print(f"Enhanced feature columns ({len(X_train_enhanced.columns)}): {list(X_train_enhanced.columns)}")
 
 enhanced_model = HistGradientBoostingClassifier(
-    max_iter=300,
+    max_iter=500,
     max_depth=8,
-    learning_rate=0.1,
+    learning_rate=0.05,
+    min_samples_leaf=20,
     random_state=42,
     early_stopping=True,
     validation_fraction=0.1,
-    n_iter_no_change=20
+    n_iter_no_change=30
 )
 
-enhanced_model.fit(X_train_enhanced, y_train)
+enhanced_model.fit(X_train_enhanced, y_train, sample_weight=train_weights)
 
 y_val_pred_enhanced = enhanced_model.predict_proba(X_val_enhanced)[:, 1]
 y_test_pred_enhanced = enhanced_model.predict_proba(X_test_enhanced)[:, 1]
@@ -261,6 +292,7 @@ y_test_pred_enhanced = enhanced_model.predict_proba(X_test_enhanced)[:, 1]
 auc_val_enhanced = roc_auc_score(y_val, y_val_pred_enhanced)
 auc_test_enhanced = roc_auc_score(y_test, y_test_pred_enhanced)
 
+print(f"Iterations used: {enhanced_model.n_iter_}")
 print(f"Validation AUC: {auc_val_enhanced:.4f} (baseline: {auc_val_baseline:.4f}, improvement: +{auc_val_enhanced-auc_val_baseline:.4f})")
 print(f"2025 Test AUC:  {auc_test_enhanced:.4f} (baseline: {auc_test_baseline:.4f}, improvement: +{auc_test_enhanced-auc_test_baseline:.4f})")
 
@@ -271,16 +303,17 @@ X_urm_val_enhanced = prepare_enhanced_features_loo(df_urm_val, selectivity_ranki
 X_urm_test_enhanced = prepare_enhanced_features_loo(df_urm_test, selectivity_rankings, verbose=False)
 
 urm_enhanced_model = HistGradientBoostingClassifier(
-    max_iter=300,
+    max_iter=500,
     max_depth=8,
-    learning_rate=0.1,
+    learning_rate=0.05,
+    min_samples_leaf=20,
     random_state=42,
     early_stopping=True,
     validation_fraction=0.1,
-    n_iter_no_change=20
+    n_iter_no_change=30
 )
 
-urm_enhanced_model.fit(X_urm_train_enhanced, y_urm_train)
+urm_enhanced_model.fit(X_urm_train_enhanced, y_urm_train, sample_weight=urm_train_weights)
 
 y_urm_val_pred_enhanced = urm_enhanced_model.predict_proba(X_urm_val_enhanced)[:, 1]
 y_urm_test_pred_enhanced = urm_enhanced_model.predict_proba(X_urm_test_enhanced)[:, 1]
@@ -288,6 +321,7 @@ y_urm_test_pred_enhanced = urm_enhanced_model.predict_proba(X_urm_test_enhanced)
 auc_urm_val_enhanced = roc_auc_score(y_urm_val, y_urm_val_pred_enhanced)
 auc_urm_test_enhanced = roc_auc_score(y_urm_test, y_urm_test_pred_enhanced)
 
+print(f"Iterations used: {urm_enhanced_model.n_iter_}")
 print(f"Validation AUC: {auc_urm_val_enhanced:.4f} (baseline: {auc_urm_val_baseline:.4f}, improvement: +{auc_urm_val_enhanced-auc_urm_val_baseline:.4f})")
 print(f"2025 Test AUC:  {auc_urm_test_enhanced:.4f} (baseline: {auc_urm_test_baseline:.4f}, improvement: +{auc_urm_test_enhanced-auc_urm_test_baseline:.4f})")
 
@@ -352,6 +386,9 @@ print("FINAL VALIDATION REPORT")
 print("=" * 70)
 
 validation_report = {
+    'version': 'v2',
+    'improvements': ['temporal_weighting', 'interaction_features', 'years_out', 'more_iterations'],
+    'temporal_decay': TEMPORAL_DECAY,
     'non_urm': {
         'baseline': {
             'val_auc': float(auc_val_baseline),
@@ -397,5 +434,5 @@ print("+------------------+------------+------------+")
 print(f"\nValidation report saved to: {MODEL_DIR}validation_report.json")
 
 print("\n" + "=" * 70)
-print("MODEL TRAINING COMPLETE")
+print("MODEL TRAINING COMPLETE (v2)")
 print("=" * 70)

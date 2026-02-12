@@ -1,7 +1,8 @@
 """
-Law School Admissions Prediction - Flask Web Application
-=========================================================
+Law School Admissions Prediction - Flask Web Application (v2)
+==============================================================
 Simple web interface for predicting law school admissions chances.
+Uses v2 models with temporal weighting, interaction features, and years_out.
 """
 
 from flask import Flask, render_template, request, jsonify
@@ -67,6 +68,7 @@ def predict():
         has_we = int(data.get('has_we', False))
         softs = int(data.get('softs', 0))  # 0-4 scale
         cycle_year = int(data.get('cycle_year', 2025))
+        years_out = float(data.get('years_out', 0))  # v2: continuous years out
 
         # Decisions from other schools
         decisions = data.get('decisions', [])  # List of {school, result}
@@ -98,8 +100,13 @@ def predict():
         for school in school_list:
             school_selectivity = selectivity_rankings.loc[school, 'selectivity']
 
+            # v2: compute interaction features
+            lsat_x_sel = lsat * school_selectivity
+            gpa_x_sel = gpa * school_selectivity
+            timing_x_sel = timing_days * school_selectivity
+
             if has_decisions:
-                # Enhanced features (must match training order)
+                # Enhanced features (must match v2 training order)
                 features = np.array([[
                     lsat,                   # lsat
                     gpa,                    # gpa
@@ -108,6 +115,10 @@ def predict():
                     softs,                  # softs_numeric
                     school_selectivity,     # school_selectivity
                     cycle_year,             # cycle_year
+                    years_out,              # years_out
+                    lsat_x_sel,             # lsat_x_selectivity
+                    gpa_x_sel,              # gpa_x_selectivity
+                    timing_x_sel,           # timing_x_selectivity
                     len(accepted_schools),  # num_acceptances
                     len(rejected_schools),  # num_rejections
                     len(waitlisted_schools),# num_waitlists
@@ -119,7 +130,7 @@ def predict():
                     min(reject_sel) if reject_sel else 0        # min_rejection_selectivity
                 ]])
             else:
-                # Baseline features (must match training order)
+                # Baseline features (must match v2 training order)
                 features = np.array([[
                     lsat,               # lsat
                     gpa,                # gpa
@@ -127,7 +138,11 @@ def predict():
                     has_we,             # has_work_experience
                     softs,              # softs_numeric
                     school_selectivity, # school_selectivity
-                    cycle_year          # cycle_year
+                    cycle_year,         # cycle_year
+                    years_out,          # years_out
+                    lsat_x_sel,         # lsat_x_selectivity
+                    gpa_x_sel,          # gpa_x_selectivity
+                    timing_x_sel        # timing_x_selectivity
                 ]])
 
             prob = model.predict_proba(features)[0][1]

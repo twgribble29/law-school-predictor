@@ -1,6 +1,7 @@
 """
-Generate static prediction data for GitHub Pages deployment.
+Generate static prediction data for GitHub Pages deployment (v2).
 Pre-computes predictions for all LSAT/GPA combinations.
+Uses v2 models with temporal weighting, interaction features, and years_out.
 """
 
 import pickle
@@ -14,7 +15,7 @@ warnings.filterwarnings('ignore')
 MODEL_DIR = "/Users/tygribble/Desktop/Law_Data/law_school_predictor/models"
 OUTPUT_DIR = "/Users/tygribble/Desktop/Law_Data/law_school_predictor/docs"
 
-print("Loading models...")
+print("Loading v2 models...")
 
 # Load models
 with open(os.path.join(MODEL_DIR, 'non_urm_baseline.pkl'), 'rb') as f:
@@ -29,14 +30,19 @@ schools = selectivity_rankings.index.tolist()
 
 print(f"Loaded {len(schools)} schools")
 
-# Feature columns (must match training order)
-FEATURE_COLS = ['lsat', 'gpa', 'app_timing_days', 'has_work_experience', 'softs_numeric', 'school_selectivity', 'cycle_year']
+# v2 feature columns (must match training order)
+FEATURE_COLS = [
+    'lsat', 'gpa', 'app_timing_days', 'has_work_experience', 'softs_numeric',
+    'school_selectivity', 'cycle_year', 'years_out',
+    'lsat_x_selectivity', 'gpa_x_selectivity', 'timing_x_selectivity'
+]
 
 # Default values
 DEFAULT_TIMING = 90
 DEFAULT_WORK_EXP = 0
 DEFAULT_SOFTS = 2
 DEFAULT_CYCLE = 2025
+DEFAULT_YEARS_OUT = 0
 
 # Generate predictions using vectorized operations for speed
 lsat_range = list(range(140, 181))
@@ -49,14 +55,19 @@ rows = []
 for lsat in lsat_range:
     for gpa in gpa_range:
         for school in schools:
+            sel = selectivity_rankings.loc[school, 'selectivity']
             rows.append({
                 'lsat': lsat,
                 'gpa': gpa,
                 'app_timing_days': DEFAULT_TIMING,
                 'has_work_experience': DEFAULT_WORK_EXP,
                 'softs_numeric': DEFAULT_SOFTS,
-                'school_selectivity': selectivity_rankings.loc[school, 'selectivity'],
+                'school_selectivity': sel,
                 'cycle_year': DEFAULT_CYCLE,
+                'years_out': DEFAULT_YEARS_OUT,
+                'lsat_x_selectivity': lsat * sel,
+                'gpa_x_selectivity': gpa * sel,
+                'timing_x_selectivity': DEFAULT_TIMING * sel,
                 'school': school
             })
 
