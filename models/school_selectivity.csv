@@ -1,0 +1,194 @@
+school_name,lsat,gpa,selectivity
+Yale University,175.0,3.93,330.5339558835506
+Stanford University,174.0,3.94,329.58185261023374
+Harvard University,175.0,3.91,329.2169915973128
+University of Chicago,173.0,3.9,326.9166997600091
+Columbia University,174.0,3.84,326.0882293874811
+New York University,173.0,3.86,325.76949320668376
+University of California—Berkeley,172.0,3.87,325.16321068484945
+University of Pennsylvania,172.0,3.89,324.9334441502343
+Duke University,172.0,3.84,324.36578854436266
+University of Virginia,171.0,3.85,322.8171736303016
+Cornell University,171.0,3.83,322.44662893787125
+Northwestern University,172.0,3.8,322.4071655503661
+Georgetown University,171.0,3.8,322.0611257979849
+University of Michigan,171.0,3.8,321.7777359498372
+University of California—Los Angeles,170.0,3.81,321.1574633804497
+University of Southern California,169.0,3.8,320.1854125423383
+Vanderbilt University,170.0,3.8,320.17738707771946
+University of Texas at Austin,170.0,3.78,319.78867489340087
+Boston University,168.0,3.75,316.92819084866863
+University of Notre Dame,168.0,3.76,316.2972327303662
+Washington University in St. Louis,170.0,3.7,315.99450869393667
+Brigham Young University,167.0,3.78,315.4746781820583
+Fordham University,168.0,3.7,315.079113518551
+George Washington University,168.0,3.73,314.86485555120316
+University of California—Irvine,167.0,3.72,314.5029889293706
+University of Minnesota,168.0,3.7,313.9808788267966
+University of Washington,167.0,3.7,313.7186971999136
+Emory University,167.0,3.7,313.61646574229496
+Boston College,167.0,3.69,313.53937473292586
+Arizona State University,168.0,3.71,313.2288254048699
+University of Alabama,167.0,3.7,312.64338669556344
+William & Mary Law School,166.0,3.7,312.4070996257421
+University of North Carolina,165.0,3.7,311.9506970304846
+University of California—Davis,166.0,3.675,311.7241878583991
+Ohio State University,165.0,3.71,311.4029646354869
+University of Georgia,167.0,3.61,310.7370976372083
+University of Illinois—Urbana Champaign,167.0,3.625,310.62556074769014
+University of Colorado—Boulder,165.0,3.69,310.38361543391284
+University of Florida (Levin),166.0,3.62,310.2377502642107
+Pennsylvania State - Penn State Law,165.0,3.715,309.92582677329136
+Washington and Lee University,166.0,3.6,309.1828983609281
+University of Utah,164.0,3.68,309.16853472901687
+University of Iowa,165.0,3.63,308.9883762954495
+Pepperdine University,164.0,3.66,308.9727083265767
+Southern Methodist University,165.0,3.66,308.9342814944156
+University of Wisconsin,165.0,3.63,308.80100091702104
+Wake Forest University,165.0,3.62,308.52360190044783
+Indiana University - Bloomington,165.0,3.62,308.48502998863717
+Yeshiva University (Cardozo),165.0,3.6,308.09438020514466
+University of California (Hastings),164.0,3.6,308.0185885244816
+University of Arizona,164.0,3.6,307.87873785677175
+Northeastern University,164.0,3.63,307.8016832388213
+George Mason University,165.0,3.61,307.7019627762273
+Baylor University,163.0,3.64,307.0598307119579
+Texas A&M University,164.0,3.66,307.0141209236421
+University of Tennessee,163.0,3.65,306.5835559818744
+Temple University,164.0,3.58,306.32803862790973
+University of Maryland,163.0,3.62,306.32327705290066
+Loyola Marymount University—Los Angeles,163.0,3.59,306.17682568071314
+University of Hawaii,164.0,3.62,306.08053978983617
+Villanova University,163.0,3.61,306.06257835994643
+University of Houston,164.0,3.58,305.8129069617217
+University of Richmond,164.0,3.59,305.5868942994638
+University of Nevada—Las Vegas,161.0,3.645,305.3100276594511
+University of San Diego,163.0,3.58,305.1120296921302
+Tulane University,163.0,3.56,305.0140698606376
+University of Connecticut,162.0,3.59,304.7215309048451
+University of Cincinnati,162.0,3.59,304.4162760405593
+Florida State University,163.0,3.57,304.41245589474903
+Brooklyn Law School,163.0,3.54,304.3106288307499
+University of Nebraska,161.0,3.635,304.09764990887
+University of New Mexico,161.0,3.6,304.0948867198179
+St. John's University,162.0,3.61,304.08352305595076
+Case Western Reserve University,161.0,3.58,303.88439152010744
+University of Kansas,162.0,3.62,303.7163968100855
+Lewis And Clark College,163.0,3.52,303.46557626709284
+American University,163.0,3.52,303.2451750190782
+University of Oklahoma,162.0,3.53,302.902724532579
+Belmont University,160.0,3.61,302.7969770520272
+University of Miami,161.0,3.54,302.4657301014472
+Rutgers University,161.0,3.59,302.41560173047776
+University of Kentucky,161.0,3.55,302.4148110203759
+University of Pittsburgh,161.0,3.53,302.2074831696925
+Georgia State University,161.0,3.51,302.1054983970171
+University of Missouri,161.0,3.54,301.8584400893731
+Loyola University—Chicago,162.0,3.47,301.80477740842235
+University of Montana,159.5,3.5949999999999998,301.74324553894496
+Pennsylvania State - Dickinson Law,162.0,3.5,301.4538268360917
+University of Oregon,161.0,3.5,301.45290073138176
+University of Denver,161.0,3.53,301.37506236558596
+Santa Clara University,161.0,3.47,300.62535084910803
+University of South Carolina,160.5,3.51,300.585755852396
+Wayne State University,162.0,3.5,300.321496365012
+University of Buffalo—SUNY,159.0,3.52,300.2868105551882
+Illinois Institute of Technology (Kent),162.0,3.47,300.2022978735754
+Michigan State University,159.0,3.54,299.66291066918694
+Seton Hall University,161.0,3.46,299.6395869257526
+Drexel University,160.0,3.49,299.46828113422015
+Texas Tech University,159.0,3.52,299.40276613629845
+Seattle University,160.0,3.49,299.3444863377994
+University of Maine,161.0,3.53,299.2988481662379
+Saint Louis University,159.0,3.49,299.12950654243014
+CUNY,160.5,3.5,299.0109379005046
+Stetson University,159.0,3.5,298.64119799574195
+Chapman University,160.0,3.46,298.6402017375577
+University of Mississippi,159.0,3.5,298.59655433222804
+Catholic University Of America,160.0,3.45,298.56351330272037
+"University of Arkansas, Fayetteville",159.0,3.5,298.4157484610943
+Marquette University,159.0,3.5,298.1922922921467
+University of San Francisco,160.0,3.44,298.02936363795243
+Louisiana State University,160.0,3.47,298.0219743165745
+(Part-time) Syracuse University,161.0,3.43,297.9930164812238
+Rutgers State University Newark (old),161.0,3.4,297.8288294083469
+Suffolk University,159.0,3.48,297.6108377269068
+Duquesne University,157.0,3.52,297.53925451536816
+Rutgers State University Camden (old),161.0,3.4,297.2564765806987
+Howard University,158.5,3.4,297.1804039335855
+University of Louisville,158.0,3.46,297.02255914680154
+University of St. Thomas (Minnesota),160.0,3.47,296.9342026470975
+Indiana University - Indianapolis,159.0,3.45,296.6987104967849
+Southwestern Law School,158.0,3.44,296.4732004912962
+DePaul University,161.0,3.4,296.4019307813503
+Campbell University,158.0,3.5,296.33347178260306
+Syracuse University,158.0,3.45,296.3325696634873
+University of New Hampshire,159.0,3.4050000000000002,296.1986639557149
+Quinnipiac University,158.0,3.47,296.1720452239841
+New York Law School,158.0,3.46,296.0607855837601
+University of the Pacific (Mcgeorge),159.0,3.41,295.9452871342569
+Florida International University,160.0,3.38,295.7937544203838
+Drake University,159.0,3.42,295.6951005322032
+Gonzaga University,158.0,3.4,295.0877157862339
+University of Wyoming,157.0,3.5,294.9686589542051
+Mercer University,157.0,3.43,294.81431208836744
+Hofstra University,159.0,3.37,294.57940692335427
+Elon University,157.0,3.415,294.09224622743324
+Cleveland State University,157.0,3.4,293.96518759029453
+University of Memphis,157.0,3.35,293.86584723102425
+Vermont Law School,158.0,3.36,293.84532535777856
+Samford University,157.0,3.4,293.8165137391859
+West Virginia University,157.0,3.4,293.23743020153523
+Pace University,156.0,3.4,293.0339556401312
+University of Idaho,158.0,3.365,292.9226626988033
+Albany Law School Of Union University,157.0,3.355,292.74770179917505
+Willamette University,158.0,3.35,292.5915670544251
+Mitchell Hamline,158.0,3.385,292.5204743745749
+University of Missouri—Kansas City,158.0,3.28,292.4547523591582
+University of North Texas at Dallas,158.0,3.2750000000000004,292.2883348743326
+New England Law | Boston,156.0,3.38,292.2517502337796
+University of Baltimore,157.0,3.335,291.97012432658846
+University of Akron,158.0,3.335,291.8841430564098
+Northern Kentucky University,156.0,3.36,291.3302523237932
+Roger Williams University,155.0,3.4,291.31788100724816
+William Mitchell College of Law,158.0,3.3,291.09807602680223
+University of Tulsa,157.0,3.3,291.03454740963747
+Creighton University,157.0,3.275,290.4854061390703
+Loyola University—New Orleans,156.0,3.31,290.3405180525516
+Ave Maria School Of Law,156.0,3.36,289.88133610931635
+Charleston School Of Law,155.0,3.35,289.82829279037054
+University of Dayton,155.0,3.33,289.58436580847086
+University of Toledo,156.0,3.33,289.3881622102248
+Capital University,154.5,3.395,289.1322487458195
+North Carolina Central University,151.0,3.425,289.0393553987356
+St. Mary's University,156.0,3.23,288.6416514509893
+Western New England University,154.0,3.3,288.5795307861762
+University of Detroit Mercy,155.0,3.34,288.57727619149523
+"University of Arkansas, Little Rock",156.0,3.24,288.50841212116353
+Valparaiso University,154.0,3.33,288.3461316374505
+Golden Gate University,157.5,3.2,288.07875141555917
+California Western School Of Law,156.0,3.25,288.0762712686241
+University of Illinois—Chicago,155.5,3.285,288.051249414396
+Washburn University,156.0,3.25,287.94817566250777
+Southern Illinois University—Carbondale,154.0,3.3,287.67829114886
+South Texas College Of Law—Houston,156.0,3.25,287.64870079616503
+Widener University—Delaware,153.0,3.27,286.8505992637529
+Western State College Of Law,155.5,3.23,285.82565594583224
+Ohio Northern University,154.0,3.245,285.6840337818501
+Northern Illinois University,154.0,3.22,285.20313389690364
+Mississippi College,153.0,3.25,285.1483618044973
+Oklahoma City University,153.0,3.2,283.5540540389184
+St. Thomas University (Florida),153.0,3.22,283.33195673278993
+Nova Southeastern University,154.0,3.18,283.22591886623246
+Florida Coastal School Of Law,152.0,3.22,282.96988019832355
+Touro College,152.0,3.145,282.45411752275976
+Atlanta's John Marshall Law School,153.0,3.13,281.8626449436803
+Thomas Jefferson School of Law,153.0,3.13,281.3713168844505
+Florida A&M University,151.0,3.22,281.115963006149
+Barry University,151.0,3.22,280.77829206296803
+Western Michigan University (Cooley),151.5,3.18,280.42045524741116
+Charlotte School of Law,153.0,3.1399999999999997,280.2615500806411
+Whittier Law School,154.0,3.06,280.078986061262
+Appalachian School of Law,151.0,3.07,277.64418437843176
+Texas Southern University,150.0,3.0549999999999997,277.0618931132207
+Southern University,148.5,3.0549999999999997,274.30710847250714

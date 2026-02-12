@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Law School Admissions Predictor</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Law School Admissions Predictor</h1>
+            <p class="subtitle">Predict your chances based on LSAT, GPA, and decisions from other schools</p>
+        </header>
+
+        <form id="prediction-form">
+            <div class="form-section">
+                <h2>Your Profile</h2>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="lsat">LSAT Score</label>
+                        <input type="number" id="lsat" name="lsat" min="120" max="180" placeholder="120-180" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="gpa">GPA</label>
+                        <input type="number" id="gpa" name="gpa" min="0" max="4" step="0.01" placeholder="0.00-4.00" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="timing">Application Timing</label>
+                        <select id="timing" name="timing">
+                            <option value="30">September (Very Early)</option>
+                            <option value="60">October (Early)</option>
+                            <option value="90" selected>November (Standard)</option>
+                            <option value="120">December (Late)</option>
+                            <option value="150">January (Very Late)</option>
+                            <option value="180">February+ (Rolling)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="softs">Softs Tier</label>
+                        <select id="softs" name="softs">
+                            <option value="0">Not Reported</option>
+                            <option value="1">T4 (Weakest)</option>
+                            <option value="2" selected>T3 (Average)</option>
+                            <option value="3">T2 (Strong)</option>
+                            <option value="4">T1 (Exceptional)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row checkboxes">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="urm" name="urm">
+                        <span>URM Status</span>
+                    </label>
+
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="has_we" name="has_we">
+                        <span>Work Experience</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h2>Decisions Received <span class="optional">(Optional)</span></h2>
+                <p class="info">Adding decisions from other schools improves prediction accuracy by up to 10%</p>
+
+                <div id="decisions-container"></div>
+
+                <button type="button" class="add-btn" onclick="addDecision()">+ Add Decision</button>
+            </div>
+
+            <button type="submit" class="predict-btn">Predict My Chances</button>
+        </form>
+
+        <div id="results" style="display: none;">
+            <div class="results-header">
+                <h2>Your Predicted Admission Chances</h2>
+                <p id="model-info"></p>
+            </div>
+
+            <div class="results-stats">
+                <div class="stat-card reach">
+                    <div class="stat-value" id="reach-count">0</div>
+                    <div class="stat-label">Reach Schools</div>
+                    <div class="stat-desc">&lt;30% chance</div>
+                </div>
+                <div class="stat-card target">
+                    <div class="stat-value" id="target-count">0</div>
+                    <div class="stat-label">Target Schools</div>
+                    <div class="stat-desc">30-70% chance</div>
+                </div>
+                <div class="stat-card safety">
+                    <div class="stat-value" id="safety-count">0</div>
+                    <div class="stat-label">Safety Schools</div>
+                    <div class="stat-desc">&gt;70% chance</div>
+                </div>
+            </div>
+
+            <div class="filter-buttons">
+                <button class="filter-btn active" data-filter="all">All Schools</button>
+                <button class="filter-btn" data-filter="safety">Safety (>70%)</button>
+                <button class="filter-btn" data-filter="target">Target (30-70%)</button>
+                <button class="filter-btn" data-filter="reach">Reach (<30%)</button>
+            </div>
+
+            <table id="results-table">
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>School</th>
+                        <th>Probability</th>
+                        <th>Category</th>
+                    </tr>
+                </thead>
+                <tbody id="results-body"></tbody>
+            </table>
+        </div>
+
+        <footer>
+            <p class="disclaimer">
+                Predictions are estimates based on historical data from LSD.Law.
+                Actual admissions decisions depend on many factors not captured in this model.
+            </p>
+        </footer>
+    </div>
+
+    <script>
+        let decisionCount = 0;
+        const schools = {{ schools | tojson }};
+
+        function addDecision() {
+            const container = document.getElementById('decisions-container');
+            const decisionDiv = document.createElement('div');
+            decisionDiv.className = 'decision-entry';
+            decisionDiv.innerHTML = `
+                <select name="decision_school_${decisionCount}" class="decision-school" required>
+                    <option value="">Select School</option>
+                    ${schools.map(school => `<option value="${school}">${school}</option>`).join('')}
+                </select>
+                <select name="decision_result_${decisionCount}" class="decision-result">
+                    <option value="Accepted">Accepted</option>
+                    <option value="Waitlisted">Waitlisted</option>
+                    <option value="Rejected">Rejected</option>
+                </select>
+                <button type="button" class="remove-btn" onclick="this.parentElement.remove()">×</button>
+            `;
+            container.appendChild(decisionDiv);
+            decisionCount++;
+        }
+
+        // Filter functionality
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+
+                const filter = this.dataset.filter;
+                document.querySelectorAll('#results-body tr').forEach(row => {
+                    if (filter === 'all') {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = row.dataset.category === filter ? '' : 'none';
+                    }
+                });
+            });
+        });
+
+        document.getElementById('prediction-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // Validate inputs
+            const lsat = parseInt(document.getElementById('lsat').value);
+            const gpa = parseFloat(document.getElementById('gpa').value);
+
+            if (lsat < 120 || lsat > 180) {
+                alert('LSAT must be between 120 and 180');
+                return;
+            }
+            if (gpa < 0 || gpa > 4) {
+                alert('GPA must be between 0.00 and 4.00');
+                return;
+            }
+
+            // Collect decisions
+            const decisions = [];
+            document.querySelectorAll('.decision-entry').forEach(entry => {
+                const school = entry.querySelector('.decision-school').value;
+                const result = entry.querySelector('.decision-result').value;
+                if (school) {
+                    decisions.push({ school, result });
+                }
+            });
+
+            const data = {
+                lsat: lsat,
+                gpa: gpa,
+                timing_days: parseInt(document.getElementById('timing').value),
+                softs: parseInt(document.getElementById('softs').value),
+                is_urm: document.getElementById('urm').checked,
+                has_we: document.getElementById('has_we').checked,
+                decisions: decisions,
+                cycle_year: 2025
+            };
+
+            // Show loading state
+            const submitBtn = document.querySelector('.predict-btn');
+            submitBtn.textContent = 'Calculating...';
+            submitBtn.disabled = true;
+
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (result.status === 'error') {
+                    alert('Error: ' + result.message);
+                    return;
+                }
+
+                // Update model info
+                const modelType = result.model_type === 'enhanced' ?
+                    `Enhanced model (using ${decisions.length} decision(s))` :
+                    'Baseline model (no decisions provided)';
+                document.getElementById('model-info').textContent =
+                    `${modelType} | ${result.is_urm ? 'URM' : 'Non-URM'} applicant`;
+
+                // Count categories
+                let reach = 0, target = 0, safety = 0;
+                result.predictions.forEach(pred => {
+                    if (pred.probability >= 70) safety++;
+                    else if (pred.probability >= 30) target++;
+                    else reach++;
+                });
+
+                document.getElementById('reach-count').textContent = reach;
+                document.getElementById('target-count').textContent = target;
+                document.getElementById('safety-count').textContent = safety;
+
+                // Display results
+                const resultsBody = document.getElementById('results-body');
+                resultsBody.innerHTML = '';
+
+                result.predictions.forEach((pred, idx) => {
+                    const row = document.createElement('tr');
+                    let category, categoryClass;
+
+                    if (pred.probability >= 70) {
+                        category = 'Safety';
+                        categoryClass = 'safety';
+                    } else if (pred.probability >= 30) {
+                        category = 'Target';
+                        categoryClass = 'target';
+                    } else {
+                        category = 'Reach';
+                        categoryClass = 'reach';
+                    }
+
+                    row.dataset.category = categoryClass;
+                    row.innerHTML = `
+                        <td>${idx + 1}</td>
+                        <td>${pred.school}</td>
+                        <td><span class="prob-badge ${categoryClass}">${pred.probability}%</span></td>
+                        <td><span class="category-label ${categoryClass}">${category}</span></td>
+                    `;
+                    resultsBody.appendChild(row);
+                });
+
+                // Show results and scroll
+                document.getElementById('results').style.display = 'block';
+                document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+
+                // Reset filter
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                document.querySelector('.filter-btn[data-filter="all"]').classList.add('active');
+                document.querySelectorAll('#results-body tr').forEach(row => row.style.display = '');
+
+            } catch (error) {
+                alert('Error connecting to server: ' + error.message);
+            } finally {
+                submitBtn.textContent = 'Predict My Chances';
+                submitBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

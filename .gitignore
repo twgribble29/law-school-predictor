@@ -1,0 +1,28 @@
+# Data files (too large for GitHub)
+*.csv
+!models/school_selectivity.csv
+!docs/*.json
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+
+# Model files (too large, keep only in models/ folder locally)
+# Uncomment below if you don't want to upload models
+# models/*.pkl
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
