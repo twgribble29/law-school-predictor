@@ -76,7 +76,7 @@ body {
     text-decoration: none;
     color: var(--white);
     font-weight: 600;
-    font-size: 1.1rem;
+    font-size: 1.25rem;
     letter-spacing: -0.01em;
 }
 
@@ -94,7 +94,7 @@ body {
 .nav-link {
     color: var(--green-300);
     text-decoration: none;
-    font-size: 0.9rem;
+    font-size: 1.05rem;
     font-weight: 500;
     padding: 8px 16px;
     border-radius: var(--radius-sm);
@@ -125,7 +125,7 @@ body {
 }
 
 .hero h1 {
-    font-size: 2.2rem;
+    font-size: 2.55rem;
     font-weight: 700;
     color: var(--green-800);
     letter-spacing: -0.02em;
@@ -134,7 +134,7 @@ body {
 
 .subtitle {
     color: var(--gray-500);
-    font-size: 1.05rem;
+    font-size: 1.2rem;
 }
 
 /* ── Cards ──────────────────────────────────────────────────────── */
@@ -157,7 +157,7 @@ body {
     display: flex;
     align-items: center;
     gap: 10px;
-    font-size: 1.15rem;
+    font-size: 1.35rem;
     font-weight: 600;
     color: var(--green-800);
     margin-bottom: 20px;
@@ -171,7 +171,7 @@ body {
 }
 
 .optional-tag {
-    font-size: 0.75rem;
+    font-size: 0.85rem;
     font-weight: 500;
     color: var(--gray-400);
     background: var(--gray-100);
@@ -198,7 +198,7 @@ body {
 
 .form-group label {
     display: block;
-    font-size: 0.85rem;
+    font-size: 1rem;
     font-weight: 500;
     color: var(--gray-700);
     margin-bottom: 6px;
@@ -210,7 +210,7 @@ body {
     padding: 10px 14px;
     border: 1.5px solid var(--gray-200);
     border-radius: var(--radius-sm);
-    font-size: 0.95rem;
+    font-size: 1.1rem;
     font-family: inherit;
     color: var(--gray-900);
     background: var(--white);
@@ -241,7 +241,7 @@ body {
     align-items: center;
     gap: 10px;
     cursor: pointer;
-    font-size: 0.9rem;
+    font-size: 1.05rem;
     color: var(--gray-700);
     user-select: none;
 }
@@ -291,7 +291,7 @@ body {
     padding: 10px 14px;
     border: 1.5px solid var(--gray-200);
     border-radius: var(--radius-sm);
-    font-size: 0.95rem;
+    font-size: 1.1rem;
     font-family: inherit;
     color: var(--gray-900);
     transition: border-color var(--transition), box-shadow var(--transition);
@@ -325,7 +325,7 @@ body {
     gap: 10px;
     padding: 10px 14px;
     cursor: pointer;
-    font-size: 0.9rem;
+    font-size: 1.0rem;
     transition: background var(--transition);
 }
 
@@ -351,7 +351,7 @@ body {
 .dropdown-name { flex: 1; }
 
 .t14-badge {
-    font-size: 0.7rem;
+    font-size: 0.8rem;
     font-weight: 600;
     color: var(--amber-500);
     background: var(--amber-100);
@@ -372,7 +372,7 @@ body {
     border: 1.5px solid var(--gray-200);
     background: var(--white);
     border-radius: 20px;
-    font-size: 0.82rem;
+    font-size: 0.95rem;
     font-family: inherit;
     font-weight: 500;
     color: var(--gray-700);
@@ -411,7 +411,7 @@ body {
     background: var(--green-100);
     border: 1px solid var(--green-200);
     border-radius: 20px;
-    font-size: 0.82rem;
+    font-size: 0.95rem;
     color: var(--green-800);
     animation: chipIn 0.2s ease;
 }
@@ -436,7 +436,7 @@ body {
 .chip-remove {
     background: none;
     border: none;
-    font-size: 1.1rem;
+    font-size: 1.25rem;
     cursor: pointer;
     color: var(--gray-400);
     padding: 0 2px;
@@ -449,7 +449,7 @@ body {
 }
 
 .helper-text {
-    font-size: 0.82rem;
+    font-size: 0.95rem;
     color: var(--gray-400);
 }
 
@@ -474,7 +474,7 @@ body {
     padding: 8px 12px;
     border: 1.5px solid var(--gray-200);
     border-radius: var(--radius-sm);
-    font-size: 0.9rem;
+    font-size: 1.0rem;
     font-family: inherit;
     color: var(--gray-900);
     background: var(--white);
@@ -516,7 +516,7 @@ body {
     border: 1.5px dashed var(--gray-300);
     background: transparent;
     border-radius: var(--radius-sm);
-    font-size: 0.88rem;
+    font-size: 1.0rem;
     font-family: inherit;
     color: var(--gray-500);
     cursor: pointer;
@@ -538,7 +538,7 @@ body {
     color: var(--white);
     border: none;
     border-radius: var(--radius-md);
-    font-size: 1.1rem;
+    font-size: 1.25rem;
     font-family: inherit;
     font-weight: 600;
     cursor: pointer;
@@ -592,14 +592,14 @@ body {
 }
 
 .results-header h2 {
-    font-size: 1.5rem;
+    font-size: 1.75rem;
     color: var(--green-800);
     margin-bottom: 8px;
 }
 
 .model-badge {
     display: inline-block;
-    font-size: 0.82rem;
+    font-size: 0.95rem;
     color: var(--gray-500);
     background: var(--gray-100);
     padding: 4px 14px;
@@ -664,7 +664,7 @@ body {
 
 .result-school-name {
     font-weight: 600;
-    font-size: 0.95rem;
+    font-size: 1.1rem;
     color: var(--gray-900);
     white-space: nowrap;
     overflow: hidden;
@@ -672,7 +672,7 @@ body {
 }
 
 .result-meta {
-    font-size: 0.78rem;
+    font-size: 0.9rem;
     color: var(--gray-400);
     display: flex;
     align-items: center;
@@ -685,7 +685,7 @@ body {
 }
 
 .result-prob {
-    font-size: 1.4rem;
+    font-size: 1.65rem;
     font-weight: 700;
     line-height: 1.2;
 }
@@ -695,7 +695,7 @@ body {
 .result-prob.reach  { color: var(--coral-500); }
 
 .result-category {
-    font-size: 0.72rem;
+    font-size: 0.84rem;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -739,7 +739,7 @@ body {
 .bw-legend {
     display: flex;
     gap: 14px;
-    font-size: 0.7rem;
+    font-size: 0.8rem;
     color: var(--gray-400);
     margin-bottom: 8px;
     padding-left: 2px;
@@ -767,7 +767,7 @@ body {
 }
 
 .content-page h1 {
-    font-size: 2rem;
+    font-size: 2.3rem;
     font-weight: 700;
     color: var(--green-800);
     margin-bottom: 8px;
@@ -776,12 +776,12 @@ body {
 
 .content-page .page-subtitle {
     color: var(--gray-500);
-    font-size: 1rem;
+    font-size: 1.15rem;
     margin-bottom: 36px;
 }
 
 .content-page h2 {
-    font-size: 1.25rem;
+    font-size: 1.45rem;
     font-weight: 600;
     color: var(--green-700);
     margin: 32px 0 12px;
@@ -790,7 +790,7 @@ body {
 }
 
 .content-page h3 {
-    font-size: 1.05rem;
+    font-size: 1.2rem;
     font-weight: 600;
     color: var(--gray-700);
     margin: 24px 0 8px;
@@ -814,7 +814,7 @@ body {
     background: var(--gray-100);
     padding: 2px 6px;
     border-radius: 4px;
-    font-size: 0.88rem;
+    font-size: 1.0rem;
     color: var(--green-700);
 }
 
@@ -853,13 +853,13 @@ body {
 }
 
 .metric-value {
-    font-size: 1.8rem;
+    font-size: 2.1rem;
     font-weight: 700;
     color: var(--green-600);
 }
 
 .metric-label {
-    font-size: 0.82rem;
+    font-size: 0.95rem;
     color: var(--gray-500);
     margin-top: 4px;
 }
@@ -895,7 +895,7 @@ body {
     color: var(--green-300);
     padding: 20px;
     text-align: center;
-    font-size: 0.82rem;
+    font-size: 0.95rem;
     line-height: 1.6;
 }
 
@@ -946,7 +946,7 @@ body {
 }
 
 .school-card-name {
-    font-size: 0.88rem;
+    font-size: 1.0rem;
     font-weight: 600;
     color: var(--gray-900);
     margin-bottom: 4px;
@@ -955,7 +955,7 @@ body {
 }
 
 .school-card-meta {
-    font-size: 0.75rem;
+    font-size: 0.88rem;
     color: var(--gray-400);
 }
 
@@ -1002,7 +1002,7 @@ body {
     background: var(--gray-100);
     border: none;
     border-radius: 50%;
-    font-size: 1.3rem;
+    font-size: 1.45rem;
     color: var(--gray-500);
     cursor: pointer;
     transition: all var(--transition);
@@ -1024,7 +1024,7 @@ body {
     gap: 12px;
     padding: 60px 0;
     color: var(--gray-400);
-    font-size: 0.9rem;
+    font-size: 1.05rem;
 }
 
 .profile-header {
@@ -1044,7 +1044,7 @@ body {
 }
 
 .profile-header h2 {
-    font-size: 1.6rem;
+    font-size: 1.85rem;
     font-weight: 700;
     color: var(--green-800);
     margin: 0 0 8px 0;
@@ -1058,7 +1058,7 @@ body {
 }
 
 .profile-stat-pill {
-    font-size: 0.82rem;
+    font-size: 0.95rem;
     color: var(--gray-500);
     background: var(--gray-50);
     padding: 3px 10px;
@@ -1076,7 +1076,7 @@ body {
 }
 
 .profile-section h3 {
-    font-size: 1.1rem;
+    font-size: 1.25rem;
     font-weight: 600;
     color: var(--green-700);
     margin-bottom: 12px;
@@ -1103,7 +1103,7 @@ body {
     display: flex;
     align-items: center;
     gap: 8px;
-    font-size: 0.88rem;
+    font-size: 1.0rem;
     font-weight: 600;
     color: var(--gray-700);
     margin-bottom: 10px;
@@ -1115,7 +1115,7 @@ body {
 }
 
 .metric-value-profile {
-    font-size: 1.8rem;
+    font-size: 2.1rem;
     font-weight: 700;
     color: var(--green-600);
     margin-bottom: 8px;
@@ -1124,7 +1124,7 @@ body {
 
 .metric-value-profile.na {
     color: var(--gray-400);
-    font-size: 1.2rem;
+    font-size: 1.4rem;
 }
 
 .metric-bar-bg {
@@ -1147,9 +1147,319 @@ body {
 .metric-bar.reverse  { background: var(--coral-500); }
 
 .metric-desc {
-    font-size: 0.72rem;
+    font-size: 0.84rem;
     color: var(--gray-400);
     line-height: 1.4;
+}
+
+/* ── Info Tooltips ──────────────────────────────────────────────── */
+
+.info-tip {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--gray-200);
+    color: var(--gray-500);
+    font-size: 0.72rem;
+    font-weight: 700;
+    cursor: help;
+    margin-left: 4px;
+    vertical-align: middle;
+    flex-shrink: 0;
+    line-height: 1;
+}
+
+.info-tip:hover {
+    background: var(--green-200);
+    color: var(--green-700);
+}
+
+.info-tip .tip-content {
+    display: none;
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--gray-900);
+    color: var(--white);
+    font-size: 0.82rem;
+    font-weight: 400;
+    line-height: 1.5;
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    width: 280px;
+    z-index: 200;
+    box-shadow: var(--shadow-lg);
+    text-align: left;
+    white-space: normal;
+}
+
+.info-tip .tip-content::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: var(--gray-900);
+}
+
+.info-tip:hover .tip-content {
+    display: block;
+}
+
+.info-tip .tip-content a {
+    color: var(--green-300);
+    text-decoration: underline;
+}
+
+/* ── Decision Badges ───────────────────────────────────────────── */
+
+.decision-badge {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 10px;
+    letter-spacing: 0.02em;
+    margin-left: 6px;
+    vertical-align: middle;
+}
+
+.decision-badge.accepted {
+    background: var(--green-100);
+    color: var(--green-600);
+    border: 1px solid var(--green-200);
+}
+
+.decision-badge.waitlisted {
+    background: var(--amber-100);
+    color: var(--amber-500);
+    border: 1px solid var(--amber-300);
+}
+
+.decision-badge.rejected {
+    background: var(--coral-100);
+    color: var(--coral-500);
+    border: 1px solid #f5c4b8;
+}
+
+/* ── Summary Panel ─────────────────────────────────────────────── */
+
+.summary-panel {
+    background: var(--white);
+    border: 1.5px solid var(--green-200);
+    border-radius: var(--radius-lg);
+    padding: 28px;
+    margin-top: 24px;
+    box-shadow: var(--shadow-sm);
+}
+
+.summary-panel h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--green-800);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.summary-panel h3 svg {
+    color: var(--green-500);
+}
+
+.summary-stats-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.summary-stat {
+    text-align: center;
+    padding: 16px;
+    background: var(--green-50);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--green-100);
+}
+
+.summary-stat-value {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--green-600);
+    line-height: 1.2;
+}
+
+.summary-stat-label {
+    font-size: 0.85rem;
+    color: var(--gray-500);
+    margin-top: 4px;
+}
+
+.summary-distribution {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.summary-dist-item {
+    flex: 1;
+    padding: 12px;
+    border-radius: var(--radius-sm);
+    text-align: center;
+}
+
+.summary-dist-item.safety {
+    background: rgba(45, 155, 131, 0.08);
+    border: 1px solid var(--green-200);
+}
+
+.summary-dist-item.target {
+    background: rgba(233, 168, 76, 0.08);
+    border: 1px solid var(--amber-300);
+}
+
+.summary-dist-item.reach {
+    background: rgba(231, 111, 81, 0.08);
+    border: 1px solid #f5c4b8;
+}
+
+.summary-dist-count {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.summary-dist-count.safety { color: var(--green-600); }
+.summary-dist-count.target { color: var(--amber-500); }
+.summary-dist-count.reach  { color: var(--coral-500); }
+
+.summary-dist-label {
+    font-size: 0.82rem;
+    color: var(--gray-500);
+    margin-top: 2px;
+}
+
+.summary-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.summary-action-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border: 1.5px solid var(--green-200);
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--green-600);
+    text-decoration: none;
+    cursor: pointer;
+    background: var(--white);
+    transition: all var(--transition);
+}
+
+.summary-action-link:hover {
+    background: var(--green-50);
+    border-color: var(--green-500);
+}
+
+/* ── Marginal Impact Tips ──────────────────────────────────────── */
+
+.marginal-tip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    margin-top: 8px;
+    background: var(--green-50);
+    border: 1px solid var(--green-100);
+    border-radius: var(--radius-sm);
+    font-size: 0.82rem;
+    color: var(--green-700);
+}
+
+.marginal-tip svg {
+    flex-shrink: 0;
+    color: var(--green-500);
+}
+
+.marginal-tip .marginal-delta {
+    font-weight: 600;
+    color: var(--green-600);
+}
+
+/* ── Caveat & Callout Cards ────────────────────────────────────── */
+
+.caveat-card {
+    background: var(--amber-100);
+    border: 1px solid var(--amber-300);
+    border-left: 4px solid var(--amber-500);
+    border-radius: var(--radius-md);
+    padding: 20px 24px;
+    margin: 24px 0;
+}
+
+.caveat-card h3 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #8B6914;
+    margin-bottom: 10px;
+}
+
+.caveat-card p, .caveat-card ul {
+    color: #6B5310;
+    margin-bottom: 8px;
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.caveat-card p:last-child, .caveat-card ul:last-child {
+    margin-bottom: 0;
+}
+
+.caveat-card ul {
+    margin-left: 20px;
+}
+
+.callout-card {
+    background: #EBF5FB;
+    border: 1px solid #AED6F1;
+    border-left: 4px solid #5DADE2;
+    border-radius: var(--radius-md);
+    padding: 20px 24px;
+    margin: 24px 0;
+}
+
+.callout-card h3 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #1A5276;
+    margin-bottom: 10px;
+}
+
+.callout-card p {
+    color: #2C3E50;
+    margin-bottom: 8px;
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.callout-card p:last-child {
+    margin-bottom: 0;
 }
 
 /* ── Responsive ──────────────────────────────────────────────────── */
@@ -1158,7 +1468,7 @@ body {
     .nav-inner { padding: 0 16px; }
     .nav-brand span { display: none; }
     .container, .content-page { padding: 20px 16px 40px; }
-    .hero h1 { font-size: 1.6rem; }
+    .hero h1 { font-size: 1.85rem; }
     .form-grid-2, .form-grid-3 { grid-template-columns: 1fr; }
     .toggle-row { flex-direction: column; gap: 16px; }
     .result-card-top { flex-direction: column; align-items: flex-start; }
@@ -1171,11 +1481,18 @@ body {
     /* School profiles responsive */
     .school-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
     .school-card { padding: 14px 10px; }
-    .school-card-name { font-size: 0.8rem; min-height: auto; }
+    .school-card-name { font-size: 0.92rem; min-height: auto; }
     .profile-modal { padding: 16px 10px; }
     .profile-modal-content { padding: 24px 16px; }
     .profile-header { flex-direction: column; text-align: center; }
-    .profile-header h2 { font-size: 1.3rem; }
+    .profile-header h2 { font-size: 1.5rem; }
     .profile-stats-row { justify-content: center; }
     .metrics-grid-3 { grid-template-columns: 1fr; }
+
+    /* New component responsive */
+    .summary-distribution { flex-direction: column; }
+    .summary-stats-row { grid-template-columns: 1fr 1fr; }
+    .summary-actions { flex-direction: column; }
+    .info-tip .tip-content { width: 220px; left: auto; right: -10px; transform: none; }
+    .info-tip .tip-content::after { left: auto; right: 16px; }
 }

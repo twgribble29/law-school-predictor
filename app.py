@@ -213,8 +213,101 @@ def predict():
                 'selectivity': round(float(sel), 1),
                 'domain': domain,
                 'is_t14': school in T14,
-                'stats': stats
+                'stats': stats,
+                '_sel': sel,
+                '_prob_raw': float(prob)
             })
+
+        # ── Marginal Impact Analysis ────────────────────────────────
+        # Build counterfactual scenarios for each school
+        scenarios = []
+        for s_name in ['lsat+1', 'lsat+2', 'lsat+3', 'lsat+5',
+                        'gpa+0.1', 'gpa+0.2', 'gpa+0.3',
+                        'softs+1', 'timing-30']:
+            for pred in predictions:
+                sel = pred['_sel']
+                cf_lsat = lsat
+                cf_gpa = gpa
+                cf_softs = softs
+                cf_timing = timing_days
+                label = ''
+
+                if s_name == 'lsat+1':
+                    cf_lsat = min(lsat + 1, 180); label = 'LSAT +1'
+                elif s_name == 'lsat+2':
+                    cf_lsat = min(lsat + 2, 180); label = 'LSAT +2'
+                elif s_name == 'lsat+3':
+                    cf_lsat = min(lsat + 3, 180); label = 'LSAT +3'
+                elif s_name == 'lsat+5':
+                    cf_lsat = min(lsat + 5, 180); label = 'LSAT +5'
+                elif s_name == 'gpa+0.1':
+                    cf_gpa = min(gpa + 0.1, 4.33); label = 'GPA +0.1'
+                elif s_name == 'gpa+0.2':
+                    cf_gpa = min(gpa + 0.2, 4.33); label = 'GPA +0.2'
+                elif s_name == 'gpa+0.3':
+                    cf_gpa = min(gpa + 0.3, 4.33); label = 'GPA +0.3'
+                elif s_name == 'softs+1':
+                    if softs < 4:
+                        cf_softs = softs + 1; label = 'Softs tier up'
+                    else:
+                        continue
+                elif s_name == 'timing-30':
+                    if timing_days > 30:
+                        cf_timing = timing_days - 30; label = 'Apply 1 month earlier'
+                    else:
+                        continue
+
+                # Skip if at max already
+                if cf_lsat == lsat and 'lsat' in s_name:
+                    continue
+                if cf_gpa == gpa and 'gpa' in s_name:
+                    continue
+
+                row = [cf_lsat, cf_gpa, cf_timing, has_we, cf_softs, sel,
+                       cycle_year, years_out,
+                       cf_lsat * sel, cf_gpa * sel, cf_timing * sel]
+                if has_decisions:
+                    row.extend([
+                        len(accepted_schools), len(rejected_schools),
+                        len(waitlisted_schools), len(decisions),
+                        np.mean(accept_sel) if accept_sel else 0,
+                        np.mean(reject_sel) if reject_sel else 0,
+                        np.mean(wl_sel) if wl_sel else 0,
+                        max(accept_sel) if accept_sel else 0,
+                        min(reject_sel) if reject_sel else 0
+                    ])
+                scenarios.append({
+                    'row': row,
+                    'school': pred['school'],
+                    'label': label,
+                    'base_prob': pred['_prob_raw']
+                })
+
+        # Batch predict all counterfactuals
+        best_marginals = {}
+        if scenarios:
+            cols = enhanced_cols if has_decisions else baseline_cols
+            cf_features = pd.DataFrame([s['row'] for s in scenarios], columns=cols)
+            cf_probs = model.predict_proba(cf_features)[:, 1]
+
+            for i, sc in enumerate(scenarios):
+                delta = float(cf_probs[i]) - sc['base_prob']
+                delta_pct = round(delta * 100, 1)
+                if delta_pct > 0:
+                    key = sc['school']
+                    if key not in best_marginals or delta_pct > best_marginals[key]['delta']:
+                        best_marginals[key] = {
+                            'label': sc['label'],
+                            'delta': delta_pct
+                        }
+
+        # Attach best marginal to each prediction and clean up
+        for pred in predictions:
+            marginal = best_marginals.get(pred['school'])
+            if marginal and marginal['delta'] >= 0.5:
+                pred['marginal'] = marginal
+            del pred['_sel']
+            del pred['_prob_raw']
 
         # Sort by selectivity descending (most competitive first)
         predictions.sort(key=lambda x: x['selectivity'], reverse=True)

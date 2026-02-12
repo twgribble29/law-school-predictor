@@ -5,7 +5,7 @@
 <div class="container">
     <header class="hero">
         <h1>Predict Your Law School Chances</h1>
-        <p class="subtitle">ML-powered admissions predictions for 193 ABA-accredited law schools</p>
+        <p class="subtitle"><a href="/methodology" style="color:var(--green-500);text-decoration:none;border-bottom:1px dashed var(--green-300)">Machine learning</a>-powered admissions predictions for 193 ABA-accredited law schools</p>
     </header>
 
     <form id="prediction-form" autocomplete="off">
@@ -29,7 +29,14 @@
 
             <div class="form-grid-3">
                 <div class="form-group">
-                    <label for="softs">Softs Tier</label>
+                    <label for="softs">Softs Tier
+                        <span class="info-tip">i<span class="tip-content"><strong>Softs Tiers</strong> rate your extracurriculars, leadership, and work quality:<br>
+                        <strong>T1:</strong> Exceptional (Rhodes Scholar, Olympic athlete, published author)<br>
+                        <strong>T2:</strong> Strong (significant leadership, notable achievements)<br>
+                        <strong>T3:</strong> Average (standard clubs, volunteering, internships)<br>
+                        <strong>T4:</strong> Weak (minimal activities)<br>
+                        <a href="https://www.lsd.law" target="_blank">Learn more at LSD.Law</a></span></span>
+                    </label>
                     <select id="softs">
                         <option value="0">Not Reported</option>
                         <option value="1">T4 (Weakest)</option>
@@ -83,7 +90,9 @@
 
             <div class="quick-add">
                 <button type="button" class="chip-btn t14-btn" id="add-t14">+ All T14</button>
+                <span class="info-tip">i<span class="tip-content"><strong>T14</strong> refers to the 14 law schools that have historically held the top positions in US News rankings. They are considered the most prestigious and competitive law programs.</span></span>
                 <button type="button" class="chip-btn" id="add-t25">+ T25</button>
+                <span class="info-tip">i<span class="tip-content"><strong>T25</strong> refers to the top 25 law schools by selectivity. These schools are highly competitive but slightly broader than the T14, including excellent programs like UCLA, Vanderbilt, and UT Austin.</span></span>
                 <button type="button" class="chip-btn" id="clear-schools">Clear All</button>
             </div>
 
@@ -124,6 +133,7 @@
         </div>
 
         <div class="results-grid" id="results-grid"></div>
+        <div id="summary-panel" class="summary-panel" style="display:none"></div>
     </section>
 </div>
 {% endblock %}
@@ -345,6 +355,14 @@ function renderResults(data) {
     const grid = document.getElementById('results-grid');
     const app = data.applicant;
 
+    // Collect decisions map for badge display
+    const decisionMap = {};
+    document.querySelectorAll('.decision-row').forEach(row => {
+        const school = row.querySelector('.decision-school').value;
+        const result = row.querySelector('.decision-result').value;
+        if (school) decisionMap[school] = result;
+    });
+
     // Model info badge
     const modelType = data.model_type === 'enhanced'
         ? 'Enhanced Model (using decisions)'
@@ -388,7 +406,7 @@ function renderResults(data) {
                         ? `<img src="${logoUrl}" class="result-logo" alt="" onerror="this.classList.add('hidden')">`
                         : '<div class="result-logo-placeholder"></div>'}
                     <div>
-                        <div class="result-school-name">${pred.school}</div>
+                        <div class="result-school-name">${pred.school}${decisionMap[pred.school] ? `<span class="decision-badge ${decisionMap[pred.school].toLowerCase()}">${decisionMap[pred.school]}</span>` : ''}</div>
                         <div class="result-meta">${pred.is_t14 ? '<span class="t14-badge">T14</span> ' : ''}Selectivity: ${pred.selectivity}</div>
                     </div>
                 </div>
@@ -398,12 +416,82 @@ function renderResults(data) {
                 </div>
             </div>
             ${chartsHtml}
+            ${pred.marginal ? `
+            <div class="marginal-tip">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+                ${pred.marginal.label} &rarr; <span class="marginal-delta">+${pred.marginal.delta}%</span> probability
+            </div>` : ''}
             <div class="result-bar-bg">
                 <div class="result-bar ${catClass}" style="width:${Math.min(pred.probability, 100)}%"></div>
             </div>
         `;
         grid.appendChild(card);
     });
+
+    // ── Summary Panel ──────────────────────────────────────────────
+    const preds = data.predictions;
+    const safetyCount = preds.filter(p => p.probability >= 70).length;
+    const targetCount = preds.filter(p => p.probability >= 30 && p.probability < 70).length;
+    const reachCount = preds.filter(p => p.probability < 30).length;
+
+    // P(at least one acceptance) = 1 - product(1 - p_i)
+    const pNone = preds.reduce((acc, p) => acc * (1 - p.probability / 100), 1);
+    const pAtLeastOne = Math.round((1 - pNone) * 1000) / 10;
+
+    const avgProb = preds.length > 0
+        ? Math.round(preds.reduce((s, p) => s + p.probability, 0) / preds.length * 10) / 10
+        : 0;
+
+    const summaryPanel = document.getElementById('summary-panel');
+    summaryPanel.innerHTML = `
+        <h3>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            Application Strategy Summary
+        </h3>
+        <div class="summary-stats-row">
+            <div class="summary-stat">
+                <div class="summary-stat-value">${pAtLeastOne}%</div>
+                <div class="summary-stat-label">Chance of at least<br>one acceptance</div>
+            </div>
+            <div class="summary-stat">
+                <div class="summary-stat-value">${avgProb}%</div>
+                <div class="summary-stat-label">Average probability<br>across schools</div>
+            </div>
+            <div class="summary-stat">
+                <div class="summary-stat-value">${preds.length}</div>
+                <div class="summary-stat-label">Schools in<br>your list</div>
+            </div>
+        </div>
+        <div class="summary-distribution">
+            <div class="summary-dist-item safety">
+                <div class="summary-dist-count safety">${safetyCount}</div>
+                <div class="summary-dist-label">Safety (70%+)</div>
+            </div>
+            <div class="summary-dist-item target">
+                <div class="summary-dist-count target">${targetCount}</div>
+                <div class="summary-dist-label">Target (30-70%)</div>
+            </div>
+            <div class="summary-dist-item reach">
+                <div class="summary-dist-count reach">${reachCount}</div>
+                <div class="summary-dist-label">Reach (&lt;30%)</div>
+            </div>
+        </div>
+        <div class="summary-actions">
+            <a href="/schools" class="summary-action-link">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+                Explore School Profiles
+            </a>
+            <a href="/methodology" class="summary-action-link">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                How predictions work
+            </a>
+            <span class="summary-action-link" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14"/></svg>
+                Adjust &amp; re-predict
+            </span>
+        </div>
+    `;
+    summaryPanel.style.display = 'block';
 
     section.style.display = 'block';
     section.scrollIntoView({ behavior: 'smooth', block: 'start' });

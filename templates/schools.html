@@ -300,9 +300,9 @@ function renderScatterPlot(data) {
         type: 'scatter',
         name: 'Rejected',
         marker: {
-            color: 'rgba(231,111,81,0.65)',
-            size: 5.5,
-            line: { color: 'rgba(255,255,255,0.6)', width: 0.5 }
+            color: 'rgba(231,111,81,0.7)',
+            size: 7,
+            line: { color: 'rgba(255,255,255,0.7)', width: 0.8 }
         },
         hovertemplate: 'GPA: %{x:.2f}<br>LSAT: %{y}<br>Rejected<extra></extra>'
     });
@@ -315,9 +315,9 @@ function renderScatterPlot(data) {
         type: 'scatter',
         name: 'Waitlisted',
         marker: {
-            color: 'rgba(233,168,76,0.7)',
-            size: 5.5,
-            line: { color: 'rgba(255,255,255,0.6)', width: 0.5 }
+            color: 'rgba(233,168,76,0.75)',
+            size: 7,
+            line: { color: 'rgba(255,255,255,0.7)', width: 0.8 }
         },
         hovertemplate: 'GPA: %{x:.2f}<br>LSAT: %{y}<br>Waitlisted<extra></extra>'
     });
@@ -330,27 +330,27 @@ function renderScatterPlot(data) {
         type: 'scatter',
         name: 'Accepted',
         marker: {
-            color: 'rgba(45,155,131,0.7)',
-            size: 5.5,
-            line: { color: 'rgba(255,255,255,0.6)', width: 0.5 }
+            color: 'rgba(45,155,131,0.75)',
+            size: 7,
+            line: { color: 'rgba(255,255,255,0.7)', width: 0.8 }
         },
         hovertemplate: 'GPA: %{x:.2f}<br>LSAT: %{y}<br>Accepted<extra></extra>'
     });
 
     const layout = {
         xaxis: {
-            title: { text: 'GPA', font: { size: 13, family: 'Inter, sans-serif' } },
+            title: { text: 'GPA', font: { size: 15, family: 'Inter, sans-serif', color: '#3D4F47' }, standoff: 12 },
             range: [2.2, 4.15],
             gridcolor: '#EBF0ED',
             zeroline: false,
-            tickfont: { size: 11 }
+            tickfont: { size: 13 }
         },
         yaxis: {
-            title: { text: 'LSAT', font: { size: 13, family: 'Inter, sans-serif' } },
+            title: { text: 'LSAT', font: { size: 15, family: 'Inter, sans-serif', color: '#3D4F47' }, standoff: 12 },
             range: [139, 181],
             gridcolor: '#EBF0ED',
             zeroline: false,
-            tickfont: { size: 11 }
+            tickfont: { size: 13 }
         },
         plot_bgcolor: 'white',
         paper_bgcolor: 'white',
@@ -363,7 +363,7 @@ function renderScatterPlot(data) {
             bgcolor: 'rgba(255,255,255,0.85)',
             bordercolor: '#D4E0DB',
             borderwidth: 1,
-            font: { size: 11 }
+            font: { size: 13 }
         },
         height: 500
     };

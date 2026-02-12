@@ -6,6 +6,21 @@
     <h1>Methodology</h1>
     <p class="page-subtitle">How our predictions work, what data we use, and what the model can (and can't) tell you.</p>
 
+    <div class="caveat-card">
+        <h3>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            Data Limitations &amp; Caveats
+        </h3>
+        <p>All training data is <strong>self-reported</strong> by applicants on LSD.Law. This means:</p>
+        <ul>
+            <li>Users who report data may not be representative of all applicants&mdash;they tend to skew toward higher-stat, more engaged applicants</li>
+            <li>Some outcomes (especially waitlist resolutions and withdrawals) may be underreported</li>
+            <li>GPA and LSAT scores are self-reported and occasionally rounded or misremembered</li>
+            <li>URM status is self-identified and definitions may vary between users</li>
+        </ul>
+        <p>Predictions should be treated as <strong>informed estimates</strong>, not guarantees. Use them as one data point among many in your decision-making process.</p>
+    </div>
+
     <h2>Data Source</h2>
     <p>Our models are trained on self-reported admissions data from <strong>Law School Data (LSD.Law)</strong>, spanning the <strong>2003&ndash;2025</strong> admissions cycles. The dataset includes over 100,000 individual application outcomes across 193 ABA-accredited law schools.</p>
     <p>For each application, we use the following information:</p>
@@ -13,7 +28,7 @@
         <li><strong>LSAT score</strong> (120&ndash;180)</li>
         <li><strong>GPA</strong> (cumulative undergraduate, to the hundredths place)</li>
         <li><strong>Application timing</strong> (days after September 1 that the application was submitted)</li>
-        <li><strong>Softs tier</strong> (self-reported extracurricular/work quality rating, T1&ndash;T4)</li>
+        <li><strong>Softs tier</strong> <span class="info-tip">i<span class="tip-content"><strong>T1:</strong> Exceptional (Rhodes Scholar, Olympic athlete)<br><strong>T2:</strong> Strong (significant leadership)<br><strong>T3:</strong> Average (standard clubs, internships)<br><strong>T4:</strong> Weak (minimal activities)<br><a href="https://www.lsd.law" target="_blank">Learn more at LSD.Law</a></span></span> (self-reported extracurricular/work quality rating, T1&ndash;T4)</li>
         <li><strong>Work experience</strong> (whether the applicant had post-undergrad work experience)</li>
         <li><strong>Years out of undergrad</strong></li>
         <li><strong>URM status</strong> (underrepresented minority)</li>
@@ -34,6 +49,16 @@
     <h3>Enhanced Model</h3>
     <p>Adds <strong>decision features</strong> from other schools: number of acceptances, rejections, and waitlists received, along with the average selectivity of those outcomes. This model is used when you provide decisions from other schools, and it captures the signal that "if you were accepted at School X, your chances at School Y also shift."</p>
     <p>Decision features are computed using <strong>leave-one-out</strong> to prevent data leakage&mdash;when predicting for a given school, only decisions from <em>other</em> schools are used.</p>
+
+    <div class="callout-card">
+        <h3>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            Understanding Your Enhanced Predictions
+        </h3>
+        <p>When you add decisions from other schools, you might notice some counterintuitive results. For example, a school that accepted you may still show a probability below 100%. This is normal and expected because:</p>
+        <p>The model predicts the probability that a <em>typical applicant with your profile</em> would be accepted&mdash;it doesn't know about your specific acceptance. Your actual outcome is one data point; the model is estimating the underlying probability based on thousands of similar applicants.</p>
+        <p>Think of it like a coin flip: if a coin lands heads, you wouldn't say it was a 100% heads coin. Similarly, your acceptance at a school doesn't mean the model should output 100%&mdash;it means you were on the favorable side of the probability distribution.</p>
+    </div>
 
     <h3>Algorithm</h3>
     <p>All models use <strong>HistGradientBoostingClassifier</strong> (scikit-learn), a histogram-based gradient boosting algorithm. Key training improvements:</p>
