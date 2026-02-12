@@ -1,297 +1,364 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Law School Admissions Predictor</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
-    <div class="container">
-        <header>
-            <h1>Law School Admissions Predictor</h1>
-            <p class="subtitle">Predict your chances based on LSAT, GPA, and decisions from other schools</p>
-        </header>
+{% extends "base.html" %}
+{% block title %}Law School Predictor{% endblock %}
 
-        <form id="prediction-form">
-            <div class="form-section">
-                <h2>Your Profile</h2>
+{% block content %}
+<div class="container">
+    <header class="hero">
+        <h1>Predict Your Law School Chances</h1>
+        <p class="subtitle">ML-powered admissions predictions for 193 ABA-accredited law schools</p>
+    </header>
 
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="lsat">LSAT Score</label>
-                        <input type="number" id="lsat" name="lsat" min="120" max="180" placeholder="120-180" required>
-                    </div>
+    <form id="prediction-form" autocomplete="off">
+        <!-- Profile Section -->
+        <section class="card">
+            <h2 class="card-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                Your Profile
+            </h2>
 
-                    <div class="form-group">
-                        <label for="gpa">GPA</label>
-                        <input type="number" id="gpa" name="gpa" min="0" max="4" step="0.01" placeholder="0.00-4.00" required>
-                    </div>
+            <div class="form-grid-2">
+                <div class="form-group">
+                    <label for="lsat">LSAT Score</label>
+                    <input type="number" id="lsat" min="120" max="180" step="1" placeholder="120-180" required>
                 </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="timing">Application Timing</label>
-                        <select id="timing" name="timing">
-                            <option value="30">September (Very Early)</option>
-                            <option value="60">October (Early)</option>
-                            <option value="90" selected>November (Standard)</option>
-                            <option value="120">December (Late)</option>
-                            <option value="150">January (Very Late)</option>
-                            <option value="180">February+ (Rolling)</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="softs">Softs Tier</label>
-                        <select id="softs" name="softs">
-                            <option value="0">Not Reported</option>
-                            <option value="1">T4 (Weakest)</option>
-                            <option value="2" selected>T3 (Average)</option>
-                            <option value="3">T2 (Strong)</option>
-                            <option value="4">T1 (Exceptional)</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="form-row checkboxes">
-                    <label class="checkbox-label">
-                        <input type="checkbox" id="urm" name="urm">
-                        <span>URM Status</span>
-                    </label>
-
-                    <label class="checkbox-label">
-                        <input type="checkbox" id="has_we" name="has_we">
-                        <span>Work Experience</span>
-                    </label>
+                <div class="form-group">
+                    <label for="gpa">GPA</label>
+                    <input type="number" id="gpa" min="0" max="4.33" step="0.01" placeholder="0.00-4.33" required>
                 </div>
             </div>
 
-            <div class="form-section">
-                <h2>Decisions Received <span class="optional">(Optional)</span></h2>
-                <p class="info">Adding decisions from other schools improves prediction accuracy by up to 10%</p>
-
-                <div id="decisions-container"></div>
-
-                <button type="button" class="add-btn" onclick="addDecision()">+ Add Decision</button>
-            </div>
-
-            <button type="submit" class="predict-btn">Predict My Chances</button>
-        </form>
-
-        <div id="results" style="display: none;">
-            <div class="results-header">
-                <h2>Your Predicted Admission Chances</h2>
-                <p id="model-info"></p>
-            </div>
-
-            <div class="results-stats">
-                <div class="stat-card reach">
-                    <div class="stat-value" id="reach-count">0</div>
-                    <div class="stat-label">Reach Schools</div>
-                    <div class="stat-desc">&lt;30% chance</div>
+            <div class="form-grid-3">
+                <div class="form-group">
+                    <label for="softs">Softs Tier</label>
+                    <select id="softs">
+                        <option value="0">Not Reported</option>
+                        <option value="1">T4 (Weakest)</option>
+                        <option value="2" selected>T3 (Average)</option>
+                        <option value="3">T2 (Strong)</option>
+                        <option value="4">T1 (Exceptional)</option>
+                    </select>
                 </div>
-                <div class="stat-card target">
-                    <div class="stat-value" id="target-count">0</div>
-                    <div class="stat-label">Target Schools</div>
-                    <div class="stat-desc">30-70% chance</div>
+                <div class="form-group">
+                    <label for="timing">Application Timing</label>
+                    <select id="timing">
+                        <option value="30">September (Very Early)</option>
+                        <option value="60">October (Early)</option>
+                        <option value="90" selected>November (Standard)</option>
+                        <option value="120">December (Late)</option>
+                        <option value="150">January (Very Late)</option>
+                        <option value="180">February+ (Rolling)</option>
+                    </select>
                 </div>
-                <div class="stat-card safety">
-                    <div class="stat-value" id="safety-count">0</div>
-                    <div class="stat-label">Safety Schools</div>
-                    <div class="stat-desc">&gt;70% chance</div>
+                <div class="form-group">
+                    <label for="years_out">Years Since Undergrad</label>
+                    <input type="number" id="years_out" min="0" max="30" step="1" value="0">
                 </div>
             </div>
 
-            <div class="filter-buttons">
-                <button class="filter-btn active" data-filter="all">All Schools</button>
-                <button class="filter-btn" data-filter="safety">Safety (>70%)</button>
-                <button class="filter-btn" data-filter="target">Target (30-70%)</button>
-                <button class="filter-btn" data-filter="reach">Reach (<30%)</button>
+            <div class="toggle-row">
+                <label class="toggle-label">
+                    <input type="checkbox" id="urm">
+                    <span class="toggle-switch"></span>
+                    <span>URM Status</span>
+                </label>
+                <label class="toggle-label">
+                    <input type="checkbox" id="has_we">
+                    <span class="toggle-switch"></span>
+                    <span>Work Experience</span>
+                </label>
+            </div>
+        </section>
+
+        <!-- School Selection Section -->
+        <section class="card">
+            <h2 class="card-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+                Select Schools
+            </h2>
+
+            <div class="school-search-wrap">
+                <input type="text" id="school-search" placeholder="Search for a school..." class="school-search">
+                <div id="school-dropdown" class="school-dropdown"></div>
             </div>
 
-            <table id="results-table">
-                <thead>
-                    <tr>
-                        <th>Rank</th>
-                        <th>School</th>
-                        <th>Probability</th>
-                        <th>Category</th>
-                    </tr>
-                </thead>
-                <tbody id="results-body"></tbody>
-            </table>
+            <div class="quick-add">
+                <button type="button" class="chip-btn t14-btn" id="add-t14">+ All T14</button>
+                <button type="button" class="chip-btn" id="add-t25">+ T25</button>
+                <button type="button" class="chip-btn" id="clear-schools">Clear All</button>
+            </div>
+
+            <div id="selected-schools" class="selected-schools"></div>
+            <p id="school-count" class="helper-text">No schools selected</p>
+        </section>
+
+        <!-- Decisions Section (Optional) -->
+        <section class="card">
+            <h2 class="card-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                Decisions Received
+                <span class="optional-tag">Optional</span>
+            </h2>
+            <p class="helper-text" style="margin-bottom:16px">Adding decisions from other schools improves prediction accuracy by leveraging the enhanced model.</p>
+
+            <div id="decisions-container"></div>
+            <button type="button" class="add-decision-btn" id="add-decision-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Add Decision
+            </button>
+        </section>
+
+        <button type="submit" class="predict-btn" id="predict-btn">
+            <span class="btn-text">Predict My Chances</span>
+            <span class="btn-loading" style="display:none">
+                <svg class="spinner" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><circle cx="12" cy="12" r="10" stroke-dasharray="60" stroke-dashoffset="20"/></svg>
+                Calculating...
+            </span>
+        </button>
+    </form>
+
+    <!-- Results Section -->
+    <section id="results" class="results-section" style="display:none">
+        <div class="results-header">
+            <h2>Your Admission Chances</h2>
+            <p id="model-info" class="model-badge"></p>
         </div>
 
-        <footer>
-            <p class="disclaimer">
-                Predictions are estimates based on historical data from LSD.Law.
-                Actual admissions decisions depend on many factors not captured in this model.
-            </p>
-        </footer>
-    </div>
+        <div class="results-grid" id="results-grid"></div>
+    </section>
+</div>
+{% endblock %}
 
-    <script>
-        let decisionCount = 0;
-        const schools = {{ schools | tojson }};
+{% block scripts %}
+<script>
+const ALL_SCHOOLS = {{ schools_json | safe }};
+const T14_NAMES = {{ t14_json | safe }};
+const T25_NAMES = ALL_SCHOOLS.filter(s => ALL_SCHOOLS.indexOf(s) < 25).map(s => s.name);
 
-        function addDecision() {
-            const container = document.getElementById('decisions-container');
-            const decisionDiv = document.createElement('div');
-            decisionDiv.className = 'decision-entry';
-            decisionDiv.innerHTML = `
-                <select name="decision_school_${decisionCount}" class="decision-school" required>
-                    <option value="">Select School</option>
-                    ${schools.map(school => `<option value="${school}">${school}</option>`).join('')}
-                </select>
-                <select name="decision_result_${decisionCount}" class="decision-result">
-                    <option value="Accepted">Accepted</option>
-                    <option value="Waitlisted">Waitlisted</option>
-                    <option value="Rejected">Rejected</option>
-                </select>
-                <button type="button" class="remove-btn" onclick="this.parentElement.remove()">×</button>
-            `;
-            container.appendChild(decisionDiv);
-            decisionCount++;
-        }
+let selectedSchools = new Set();
 
-        // Filter functionality
-        document.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
+// ── School Search & Selection ──────────────────────────────────────
+const searchInput = document.getElementById('school-search');
+const dropdown = document.getElementById('school-dropdown');
+const selectedContainer = document.getElementById('selected-schools');
 
-                const filter = this.dataset.filter;
-                document.querySelectorAll('#results-body tr').forEach(row => {
-                    if (filter === 'all') {
-                        row.style.display = '';
-                    } else {
-                        row.style.display = row.dataset.category === filter ? '' : 'none';
-                    }
-                });
-            });
+searchInput.addEventListener('input', function() {
+    const query = this.value.toLowerCase().trim();
+    dropdown.innerHTML = '';
+    if (query.length < 2) { dropdown.style.display = 'none'; return; }
+
+    const matches = ALL_SCHOOLS.filter(s =>
+        s.name.toLowerCase().includes(query) && !selectedSchools.has(s.name)
+    ).slice(0, 10);
+
+    if (matches.length === 0) { dropdown.style.display = 'none'; return; }
+
+    matches.forEach(school => {
+        const item = document.createElement('div');
+        item.className = 'dropdown-item';
+        const logoUrl = school.domain
+            ? `https://www.google.com/s2/favicons?domain=${school.domain}&sz=32`
+            : '';
+        item.innerHTML = `
+            ${logoUrl ? `<img src="${logoUrl}" class="school-icon-sm" alt="" onerror="this.style.display='none'">` : '<span class="school-icon-placeholder-sm"></span>'}
+            <span class="dropdown-name">${school.name}</span>
+            ${school.is_t14 ? '<span class="t14-badge">T14</span>' : ''}
+        `;
+        item.addEventListener('click', () => {
+            addSchool(school.name);
+            searchInput.value = '';
+            dropdown.style.display = 'none';
         });
+        dropdown.appendChild(item);
+    });
+    dropdown.style.display = 'block';
+});
 
-        document.getElementById('prediction-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
+searchInput.addEventListener('blur', () => setTimeout(() => dropdown.style.display = 'none', 200));
 
-            // Validate inputs
-            const lsat = parseInt(document.getElementById('lsat').value);
-            const gpa = parseFloat(document.getElementById('gpa').value);
+function addSchool(name) {
+    if (selectedSchools.has(name)) return;
+    selectedSchools.add(name);
+    renderSelectedSchools();
+}
 
-            if (lsat < 120 || lsat > 180) {
-                alert('LSAT must be between 120 and 180');
-                return;
-            }
-            if (gpa < 0 || gpa > 4) {
-                alert('GPA must be between 0.00 and 4.00');
-                return;
-            }
+function removeSchool(name) {
+    selectedSchools.delete(name);
+    renderSelectedSchools();
+}
 
-            // Collect decisions
-            const decisions = [];
-            document.querySelectorAll('.decision-entry').forEach(entry => {
-                const school = entry.querySelector('.decision-school').value;
-                const result = entry.querySelector('.decision-result').value;
-                if (school) {
-                    decisions.push({ school, result });
-                }
-            });
+function renderSelectedSchools() {
+    const arr = Array.from(selectedSchools);
+    // Sort by selectivity (most competitive first)
+    arr.sort((a, b) => {
+        const sa = ALL_SCHOOLS.find(s => s.name === a);
+        const sb = ALL_SCHOOLS.find(s => s.name === b);
+        return (sb ? sb.selectivity : 0) - (sa ? sa.selectivity : 0);
+    });
 
-            const data = {
-                lsat: lsat,
-                gpa: gpa,
-                timing_days: parseInt(document.getElementById('timing').value),
-                softs: parseInt(document.getElementById('softs').value),
-                is_urm: document.getElementById('urm').checked,
-                has_we: document.getElementById('has_we').checked,
-                decisions: decisions,
-                cycle_year: 2025
-            };
+    selectedContainer.innerHTML = arr.map(name => {
+        const school = ALL_SCHOOLS.find(s => s.name === name);
+        const logoUrl = school && school.domain
+            ? `https://www.google.com/s2/favicons?domain=${school.domain}&sz=32`
+            : '';
+        const t14 = school && school.is_t14 ? ' t14' : '';
+        return `<div class="school-chip${t14}">
+            ${logoUrl ? `<img src="${logoUrl}" class="chip-icon" alt="" onerror="this.style.display='none'">` : ''}
+            <span>${name}</span>
+            <button type="button" class="chip-remove" onclick="removeSchool('${name.replace(/'/g, "\\'")}')">&times;</button>
+        </div>`;
+    }).join('');
 
-            // Show loading state
-            const submitBtn = document.querySelector('.predict-btn');
-            submitBtn.textContent = 'Calculating...';
-            submitBtn.disabled = true;
+    const count = selectedSchools.size;
+    document.getElementById('school-count').textContent =
+        count === 0 ? 'No schools selected' : `${count} school${count > 1 ? 's' : ''} selected`;
+}
 
-            try {
-                const response = await fetch('/predict', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
-                });
+// Quick-add buttons
+document.getElementById('add-t14').addEventListener('click', () => {
+    T14_NAMES.forEach(name => addSchool(name));
+});
+document.getElementById('add-t25').addEventListener('click', () => {
+    T25_NAMES.forEach(name => addSchool(name));
+});
+document.getElementById('clear-schools').addEventListener('click', () => {
+    selectedSchools.clear();
+    renderSelectedSchools();
+});
 
-                const result = await response.json();
+// ── Decision Inputs ────────────────────────────────────────────────
+let decisionCount = 0;
+document.getElementById('add-decision-btn').addEventListener('click', addDecision);
 
-                if (result.status === 'error') {
-                    alert('Error: ' + result.message);
-                    return;
-                }
+function addDecision() {
+    const container = document.getElementById('decisions-container');
+    const div = document.createElement('div');
+    div.className = 'decision-row';
+    div.innerHTML = `
+        <select class="decision-school" required>
+            <option value="">Select School</option>
+            ${ALL_SCHOOLS.map(s => `<option value="${s.name}">${s.name}</option>`).join('')}
+        </select>
+        <select class="decision-result">
+            <option value="Accepted">Accepted</option>
+            <option value="Waitlisted">Waitlisted</option>
+            <option value="Rejected">Rejected</option>
+        </select>
+        <button type="button" class="decision-remove" onclick="this.parentElement.remove()">&times;</button>
+    `;
+    container.appendChild(div);
+    decisionCount++;
+}
 
-                // Update model info
-                const modelType = result.model_type === 'enhanced' ?
-                    `Enhanced model (using ${decisions.length} decision(s))` :
-                    'Baseline model (no decisions provided)';
-                document.getElementById('model-info').textContent =
-                    `${modelType} | ${result.is_urm ? 'URM' : 'Non-URM'} applicant`;
+// ── Form Submission ────────────────────────────────────────────────
+document.getElementById('prediction-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
 
-                // Count categories
-                let reach = 0, target = 0, safety = 0;
-                result.predictions.forEach(pred => {
-                    if (pred.probability >= 70) safety++;
-                    else if (pred.probability >= 30) target++;
-                    else reach++;
-                });
+    if (selectedSchools.size === 0) {
+        alert('Please select at least one school.');
+        return;
+    }
 
-                document.getElementById('reach-count').textContent = reach;
-                document.getElementById('target-count').textContent = target;
-                document.getElementById('safety-count').textContent = safety;
+    const lsat = parseInt(document.getElementById('lsat').value);
+    const gpa = parseFloat(document.getElementById('gpa').value);
+    if (lsat < 120 || lsat > 180) { alert('LSAT must be between 120 and 180.'); return; }
+    if (gpa < 0 || gpa > 4.33) { alert('GPA must be between 0.00 and 4.33.'); return; }
 
-                // Display results
-                const resultsBody = document.getElementById('results-body');
-                resultsBody.innerHTML = '';
+    // Collect decisions
+    const decisions = [];
+    document.querySelectorAll('.decision-row').forEach(row => {
+        const school = row.querySelector('.decision-school').value;
+        const result = row.querySelector('.decision-result').value;
+        if (school) decisions.push({ school, result });
+    });
 
-                result.predictions.forEach((pred, idx) => {
-                    const row = document.createElement('tr');
-                    let category, categoryClass;
+    const payload = {
+        lsat,
+        gpa,
+        timing_days: parseInt(document.getElementById('timing').value),
+        softs: parseInt(document.getElementById('softs').value),
+        is_urm: document.getElementById('urm').checked,
+        has_we: document.getElementById('has_we').checked,
+        years_out: parseFloat(document.getElementById('years_out').value) || 0,
+        cycle_year: 2025,
+        decisions,
+        schools: Array.from(selectedSchools)
+    };
 
-                    if (pred.probability >= 70) {
-                        category = 'Safety';
-                        categoryClass = 'safety';
-                    } else if (pred.probability >= 30) {
-                        category = 'Target';
-                        categoryClass = 'target';
-                    } else {
-                        category = 'Reach';
-                        categoryClass = 'reach';
-                    }
+    // Loading state
+    const btn = document.getElementById('predict-btn');
+    btn.querySelector('.btn-text').style.display = 'none';
+    btn.querySelector('.btn-loading').style.display = 'inline-flex';
+    btn.disabled = true;
 
-                    row.dataset.category = categoryClass;
-                    row.innerHTML = `
-                        <td>${idx + 1}</td>
-                        <td>${pred.school}</td>
-                        <td><span class="prob-badge ${categoryClass}">${pred.probability}%</span></td>
-                        <td><span class="category-label ${categoryClass}">${category}</span></td>
-                    `;
-                    resultsBody.appendChild(row);
-                });
-
-                // Show results and scroll
-                document.getElementById('results').style.display = 'block';
-                document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
-
-                // Reset filter
-                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-                document.querySelector('.filter-btn[data-filter="all"]').classList.add('active');
-                document.querySelectorAll('#results-body tr').forEach(row => row.style.display = '');
-
-            } catch (error) {
-                alert('Error connecting to server: ' + error.message);
-            } finally {
-                submitBtn.textContent = 'Predict My Chances';
-                submitBtn.disabled = false;
-            }
+    try {
+        const res = await fetch('/predict', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
         });
-    </script>
-</body>
-</html>
+        const data = await res.json();
+        if (data.status === 'error') { alert('Error: ' + data.message); return; }
+        renderResults(data);
+    } catch (err) {
+        alert('Error: ' + err.message);
+    } finally {
+        btn.querySelector('.btn-text').style.display = 'inline';
+        btn.querySelector('.btn-loading').style.display = 'none';
+        btn.disabled = false;
+    }
+});
+
+// ── Render Results ─────────────────────────────────────────────────
+function renderResults(data) {
+    const section = document.getElementById('results');
+    const grid = document.getElementById('results-grid');
+
+    // Model info badge
+    const modelType = data.model_type === 'enhanced'
+        ? 'Enhanced Model (using decisions)'
+        : 'Baseline Model';
+    const urmText = data.is_urm ? 'URM' : 'Non-URM';
+    document.getElementById('model-info').textContent = `${modelType} \u00b7 ${urmText}`;
+
+    grid.innerHTML = '';
+
+    data.predictions.forEach(pred => {
+        let category, catClass;
+        if (pred.probability >= 70) { category = 'Safety'; catClass = 'safety'; }
+        else if (pred.probability >= 30) { category = 'Target'; catClass = 'target'; }
+        else { category = 'Reach'; catClass = 'reach'; }
+
+        const logoUrl = pred.domain
+            ? `https://www.google.com/s2/favicons?domain=${pred.domain}&sz=64`
+            : '';
+
+        const card = document.createElement('div');
+        card.className = `result-card ${catClass}`;
+        card.innerHTML = `
+            <div class="result-card-top">
+                <div class="result-school-info">
+                    ${logoUrl
+                        ? `<img src="${logoUrl}" class="result-logo" alt="" onerror="this.classList.add('hidden')">`
+                        : '<div class="result-logo-placeholder"></div>'}
+                    <div>
+                        <div class="result-school-name">${pred.school}</div>
+                        <div class="result-meta">${pred.is_t14 ? '<span class="t14-badge">T14</span> ' : ''}Selectivity: ${pred.selectivity}</div>
+                    </div>
+                </div>
+                <div class="result-prob-wrap">
+                    <div class="result-prob ${catClass}">${pred.probability}%</div>
+                    <div class="result-category ${catClass}">${category}</div>
+                </div>
+            </div>
+            <div class="result-bar-bg">
+                <div class="result-bar ${catClass}" style="width:${Math.min(pred.probability, 100)}%"></div>
+            </div>
+        `;
+        grid.appendChild(card);
+    });
+
+    section.style.display = 'block';
+    section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+</script>
+{% endblock %}

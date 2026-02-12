@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}Methodology - Law School Predictor{% endblock %}
+
+{% block content %}
+<div class="content-page">
+    <h1>Methodology</h1>
+    <p class="page-subtitle">How our predictions work, what data we use, and what the model can (and can't) tell you.</p>
+
+    <h2>Data Source</h2>
+    <p>Our models are trained on self-reported admissions data from <strong>Law School Data (LSD.Law)</strong>, spanning the <strong>2003&ndash;2025</strong> admissions cycles. The dataset includes over 100,000 individual application outcomes across 193 ABA-accredited law schools.</p>
+    <p>For each application, we use the following information:</p>
+    <ul>
+        <li><strong>LSAT score</strong> (120&ndash;180)</li>
+        <li><strong>GPA</strong> (cumulative undergraduate, to the hundredths place)</li>
+        <li><strong>Application timing</strong> (days after September 1 that the application was submitted)</li>
+        <li><strong>Softs tier</strong> (self-reported extracurricular/work quality rating, T1&ndash;T4)</li>
+        <li><strong>Work experience</strong> (whether the applicant had post-undergrad work experience)</li>
+        <li><strong>Years out of undergrad</strong></li>
+        <li><strong>URM status</strong> (underrepresented minority)</li>
+        <li><strong>Cycle year</strong></li>
+        <li><strong>Decisions at other schools</strong> (for the enhanced model)</li>
+    </ul>
+
+    <h2>School Selectivity Ranking</h2>
+    <p>Each law school is assigned a <strong>selectivity score</strong> derived from an Elo-style rating system based on historical LSAT medians and GPA medians. This score (ranging from ~274 to ~331) captures how competitive a school is and serves as the single most important feature in the model.</p>
+    <p>Our selectivity ranking correlates <span class="stat-highlight">0.917</span> with US News law school rankings, providing an objective, data-driven measure of school competitiveness.</p>
+
+    <h2>Model Architecture</h2>
+    <p>We train two types of models for each URM category (4 models total):</p>
+
+    <h3>Baseline Model</h3>
+    <p>Uses only the applicant's stats and school information. This is the model used when no decisions from other schools are provided. Features include LSAT, GPA, school selectivity, application timing, softs, work experience, years out, cycle year, and three interaction terms (LSAT&times;selectivity, GPA&times;selectivity, timing&times;selectivity).</p>
+
+    <h3>Enhanced Model</h3>
+    <p>Adds <strong>decision features</strong> from other schools: number of acceptances, rejections, and waitlists received, along with the average selectivity of those outcomes. This model is used when you provide decisions from other schools, and it captures the signal that "if you were accepted at School X, your chances at School Y also shift."</p>
+    <p>Decision features are computed using <strong>leave-one-out</strong> to prevent data leakage&mdash;when predicting for a given school, only decisions from <em>other</em> schools are used.</p>
+
+    <h3>Algorithm</h3>
+    <p>All models use <strong>HistGradientBoostingClassifier</strong> (scikit-learn), a histogram-based gradient boosting algorithm. Key training improvements:</p>
+    <ul>
+        <li><strong>Temporal weighting:</strong> Recent admissions cycles are weighted more heavily using exponential decay (0.9<sup>age</sup>), reflecting the significant shift in acceptance rates post-2020.</li>
+        <li><strong>Interaction features:</strong> LSAT&times;selectivity, GPA&times;selectivity, and timing&times;selectivity capture how the value of each stat varies by school competitiveness.</li>
+        <li><strong>Early stopping:</strong> 500 max iterations with 30-round patience to prevent overfitting.</li>
+    </ul>
+
+    <h2>Model Performance</h2>
+
+    <div class="metrics-grid">
+        <div class="metric-card">
+            <div class="metric-value">0.916</div>
+            <div class="metric-label">Non-URM Enhanced<br>Validation AUC</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-value">0.883</div>
+            <div class="metric-label">URM Enhanced<br>Validation AUC</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-value">0.907</div>
+            <div class="metric-label">Median Per-School<br>AUC</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-value">~2.5pp</div>
+            <div class="metric-label">Max Calibration<br>Error</div>
+        </div>
+    </div>
+
+    <p>The models are well-calibrated: a prediction of 60% means roughly a 58&ndash;63% actual acceptance rate. Calibration was validated across deciles with a maximum error of approximately 2.5 percentage points.</p>
+
+    <h2>Where the Model Struggles</h2>
+    <p>No stats-based model can capture the full picture. Our error analysis identified these systematic challenges:</p>
+    <ul>
+        <li><strong>T6 holistic review:</strong> Yale, Stanford, Harvard, Chicago, Columbia, and NYU use heavy holistic review. The model achieves lower AUC (0.82&ndash;0.84) at these schools because personal statements, recommendations, and institutional priorities matter more.</li>
+        <li><strong>Splitter profiles:</strong> Applicants with a high LSAT but low GPA (or vice versa) are hardest to predict (AUC 0.894) because schools weight these differently.</li>
+        <li><strong>Unobserved factors:</strong> Legacy status, athletic recruitment, URM misclassification in the data, character &amp; fitness issues, and yield protection are real but not captured.</li>
+        <li><strong>Recent cycles:</strong> The 2023&ndash;2024 cycles show slightly lower performance (AUC ~0.88) as admissions become more competitive. Temporal weighting helps but doesn't fully bridge this gap.</li>
+    </ul>
+
+    <div class="info-card">
+        <p><strong>Bottom line:</strong> This tool provides a strong statistical baseline for your chances. Use it to inform your school list, but remember that holistic factors&mdash;your personal statement, letters of recommendation, and unique circumstances&mdash;matter, especially at top schools.</p>
+    </div>
+
+    <h2>What "Not Reported" Means</h2>
+    <p>If you select "Not Reported" for softs or leave years out at 0, the model uses default values that represent a typical applicant. This won't significantly affect your LSAT/GPA-driven predictions, as softs and work experience have relatively small feature importance (~0.3% and ~0.1% respectively).</p>
+
+    <h2>Technical Details</h2>
+    <ul>
+        <li><strong>Framework:</strong> Python, scikit-learn, Flask</li>
+        <li><strong>Training data:</strong> ~65,000 non-URM and ~12,000 URM application outcomes</li>
+        <li><strong>Validation:</strong> Temporal split (train: 2003&ndash;2021, val: 2022&ndash;2023, test: 2024&ndash;2025)</li>
+        <li><strong>Features:</strong> 11 baseline / 20 enhanced</li>
+        <li><strong>Temporal decay:</strong> 0.9<sup>(max_year - cycle_year)</sup></li>
+        <li><strong>Source code:</strong> <a href="https://github.com/twgribble29/law-school-predictor" style="color: var(--green-500);">GitHub</a></li>
+    </ul>
+</div>
+{% endblock %}

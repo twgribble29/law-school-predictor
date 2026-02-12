@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}About - Law School Predictor{% endblock %}
+
+{% block content %}
+<div class="content-page">
+    <h1>About the Author</h1>
+    <p class="page-subtitle">The story behind this project.</p>
+
+    <div class="about-profile">
+        <div class="about-avatar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+            </svg>
+        </div>
+        <div>
+            <h2 style="margin-top:0; border:none; padding:0;">Ty Gribble</h2>
+            <p>Data scientist and law school applicant who built this tool to bring transparency and data-driven insights to the admissions process.</p>
+        </div>
+    </div>
+
+    <h2>Why I Built This</h2>
+    <p>The law school admissions process is notoriously opaque. Applicants spend months agonizing over where to apply, often relying on anecdotal advice from forums or expensive admissions consultants. Meanwhile, a wealth of self-reported admissions data exists on platforms like LSD.Law&mdash;but it's difficult for most people to interpret.</p>
+    <p>I built this predictor to make that data actionable. By training machine learning models on over 100,000 historical application outcomes, this tool gives applicants a clear, statistical picture of their chances at any ABA-accredited law school.</p>
+
+    <h2>Approach</h2>
+    <p>This isn't a simple "median LSAT/GPA" lookup. The model accounts for temporal trends (acceptance rates have dropped 15&ndash;23 percentage points post-2020), interaction effects between your stats and school competitiveness, application timing, and&mdash;when available&mdash;your outcomes at other schools.</p>
+    <p>Every design decision was driven by rigorous analysis: we validated against held-out test data, checked calibration across deciles, analyzed errors by school tier and applicant profile, and implemented temporal weighting to ensure predictions reflect the current admissions landscape.</p>
+
+    <h2>Limitations &amp; Ethics</h2>
+    <p>I want to be transparent about what this tool can't do:</p>
+    <ul>
+        <li>It cannot capture holistic factors (personal statements, recommendations, diversity contributions)</li>
+        <li>The training data is self-reported and may contain biases</li>
+        <li>URM status is self-reported and imperfect</li>
+        <li>Past admissions patterns don't guarantee future outcomes</li>
+    </ul>
+    <p>This tool is meant to <em>inform</em> your decisions, not make them for you. Use it as one data point among many.</p>
+
+    <h2>Contact</h2>
+    <p>Found a bug? Have feedback? Want to collaborate?</p>
+    <ul>
+        <li><strong>GitHub:</strong> <a href="https://github.com/twgribble29/law-school-predictor" style="color: var(--green-500);">twgribble29/law-school-predictor</a></li>
+    </ul>
+</div>
+{% endblock %}
