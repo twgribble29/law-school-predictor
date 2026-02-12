@@ -34,6 +34,10 @@ with open(os.path.join(MODEL_DIR, 'feature_info.pkl'), 'rb') as f:
 selectivity_rankings = pd.read_csv(os.path.join(MODEL_DIR, 'school_selectivity.csv'), index_col=0)
 school_list = selectivity_rankings.index.tolist()
 
+# Load per-school accepted student distributions
+with open(os.path.join(MODEL_DIR, 'school_stats.json'), 'r') as f:
+    school_stats = json.load(f)
+
 # T14 schools (by selectivity ranking)
 T14 = school_list[:14]
 
@@ -197,13 +201,15 @@ def predict():
 
             prob = model.predict_proba(features)[0][1]
             domain = SCHOOL_DOMAINS.get(school, '')
+            stats = school_stats.get(school, {})
 
             predictions.append({
                 'school': school,
                 'probability': round(float(prob) * 100, 1),
                 'selectivity': round(float(sel), 1),
                 'domain': domain,
-                'is_t14': school in T14
+                'is_t14': school in T14,
+                'stats': stats
             })
 
         # Sort by selectivity descending (most competitive first)
@@ -213,7 +219,8 @@ def predict():
             'status': 'success',
             'predictions': predictions,
             'model_type': 'enhanced' if has_decisions else 'baseline',
-            'is_urm': is_urm
+            'is_urm': is_urm,
+            'applicant': {'lsat': lsat, 'gpa': gpa}
         })
 
     except Exception as e:

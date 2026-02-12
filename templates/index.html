@@ -308,10 +308,42 @@ document.getElementById('prediction-form').addEventListener('submit', async (e) 
     }
 });
 
+// ── Box-and-Whisker SVG Builder ────────────────────────────────────
+function buildBoxWhisker(label, min, q25, q50, q75, max, applicantVal, scaleMin, scaleMax) {
+    const W = 240, H = 36, PAD = 20;
+    const plotW = W - PAD * 2;
+    const range = scaleMax - scaleMin || 1;
+    const x = v => PAD + ((v - scaleMin) / range) * plotW;
+
+    const boxL = x(q25), boxR = x(q75), medX = x(q50);
+    const whiskerL = x(min), whiskerR = x(max);
+    const appX = Math.max(PAD, Math.min(W - PAD, x(applicantVal)));
+
+    // Determine if applicant is above/below median
+    const appColor = applicantVal >= q50 ? '#2D9B83' : '#E76F51';
+
+    return `<svg viewBox="0 0 ${W} ${H}" class="bw-chart">
+        <!-- Whisker line -->
+        <line x1="${whiskerL}" y1="18" x2="${whiskerR}" y2="18" stroke="#B4C7BF" stroke-width="1.5"/>
+        <!-- Whisker caps -->
+        <line x1="${whiskerL}" y1="12" x2="${whiskerL}" y2="24" stroke="#B4C7BF" stroke-width="1.5"/>
+        <line x1="${whiskerR}" y1="12" x2="${whiskerR}" y2="24" stroke="#B4C7BF" stroke-width="1.5"/>
+        <!-- Box (IQR) -->
+        <rect x="${boxL}" y="8" width="${boxR - boxL}" height="20" rx="3" fill="#E8F7F3" stroke="#86D9C2" stroke-width="1.5"/>
+        <!-- Median line -->
+        <line x1="${medX}" y1="8" x2="${medX}" y2="28" stroke="#1B6B4F" stroke-width="2"/>
+        <!-- Applicant marker (diamond) -->
+        <polygon points="${appX},6 ${appX+6},18 ${appX},30 ${appX-6},18" fill="${appColor}" stroke="white" stroke-width="1"/>
+        <!-- Label -->
+        <text x="2" y="7" font-size="8" fill="#6B7F75" font-family="Inter,sans-serif">${label}</text>
+    </svg>`;
+}
+
 // ── Render Results ─────────────────────────────────────────────────
 function renderResults(data) {
     const section = document.getElementById('results');
     const grid = document.getElementById('results-grid');
+    const app = data.applicant;
 
     // Model info badge
     const modelType = data.model_type === 'enhanced'
@@ -332,6 +364,21 @@ function renderResults(data) {
             ? `https://www.google.com/s2/favicons?domain=${pred.domain}&sz=64`
             : '';
 
+        const st = pred.stats || {};
+        let chartsHtml = '';
+        if (st.lsat_25) {
+            chartsHtml = `
+                <div class="bw-row">
+                    ${buildBoxWhisker('LSAT', st.lsat_min, st.lsat_25, st.lsat_50, st.lsat_75, st.lsat_max, app.lsat, st.lsat_min - 2, st.lsat_max + 2)}
+                    ${buildBoxWhisker('GPA', st.gpa_min, st.gpa_25, st.gpa_50, st.gpa_75, st.gpa_max, app.gpa, st.gpa_min - 0.1, st.gpa_max + 0.1)}
+                </div>
+                <div class="bw-legend">
+                    <span class="bw-legend-item"><span class="bw-swatch" style="background:#E8F7F3;border:1px solid #86D9C2"></span>25th-75th of admits</span>
+                    <span class="bw-legend-item"><span class="bw-swatch" style="background:#1B6B4F"></span>Median</span>
+                    <span class="bw-legend-item"><svg width="10" height="10" viewBox="0 0 10 10"><polygon points="5,0 10,5 5,10 0,5" fill="#2D9B83"/></svg> You</span>
+                </div>`;
+        }
+
         const card = document.createElement('div');
         card.className = `result-card ${catClass}`;
         card.innerHTML = `
@@ -350,6 +397,7 @@ function renderResults(data) {
                     <div class="result-category ${catClass}">${category}</div>
                 </div>
             </div>
+            ${chartsHtml}
             <div class="result-bar-bg">
                 <div class="result-bar ${catClass}" style="width:${Math.min(pred.probability, 100)}%"></div>
             </div>

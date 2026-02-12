@@ -722,6 +722,42 @@ body {
 .result-bar.target { background: var(--amber-400); }
 .result-bar.reach  { background: var(--coral-400); }
 
+/* ── Box-and-Whisker Charts ──────────────────────────────────────── */
+
+.bw-row {
+    display: flex;
+    gap: 8px;
+    margin: 10px 0 4px;
+}
+
+.bw-chart {
+    flex: 1;
+    height: 36px;
+    min-width: 0;
+}
+
+.bw-legend {
+    display: flex;
+    gap: 14px;
+    font-size: 0.7rem;
+    color: var(--gray-400);
+    margin-bottom: 8px;
+    padding-left: 2px;
+}
+
+.bw-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.bw-swatch {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+}
+
 /* ── Content Pages (Methodology, About) ──────────────────────────── */
 
 .content-page {
