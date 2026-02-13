@@ -99,6 +99,33 @@ SCHOOL_DOMAINS = {
     'William & Mary': 'wm.edu',
 }
 
+# Compute selectivity percentiles (lower acceptance = higher percentile)
+# Using rank-based percentile on selectivity scores
+all_selectivity_values = selectivity_rankings['selectivity'].values
+selectivity_percentiles = {}
+for school in school_list:
+    sel = selectivity_rankings.loc[school, 'selectivity']
+    # Percentile = fraction of schools with LOWER selectivity
+    pct = float(np.sum(all_selectivity_values < sel)) / len(all_selectivity_values) * 100
+    selectivity_percentiles[school] = round(pct, 1)
+
+# Estimate historical waitlist rates per school from training data
+# Default to 15% if no data available
+school_waitlist_rates = {}
+try:
+    wl_data = pd.read_csv(os.path.join(os.path.dirname(__file__), 'non_urm_train.csv'))
+    for school in school_list:
+        school_rows = wl_data[wl_data['school_name'] == school]
+        if len(school_rows) > 20:
+            total = len(school_rows)
+            wl_count = len(school_rows[school_rows['result_clean'] == 'Waitlisted'])
+            school_waitlist_rates[school] = round(wl_count / total, 3) if total > 0 else 0.15
+        else:
+            school_waitlist_rates[school] = 0.15
+except Exception:
+    for school in school_list:
+        school_waitlist_rates[school] = 0.15
+
 # Build schools data with domains
 schools_data = []
 for school in school_list:
@@ -107,6 +134,7 @@ for school in school_list:
     schools_data.append({
         'name': school,
         'selectivity': round(float(row['selectivity']), 1),
+        'selectivity_percentile': selectivity_percentiles.get(school),
         'lsat_median': round(float(row['lsat']), 0),
         'gpa_median': round(float(row['gpa']), 2),
         'domain': domain,
@@ -211,6 +239,8 @@ def predict():
                 'school': school,
                 'probability': round(float(prob) * 100, 1),
                 'selectivity': round(float(sel), 1),
+                'selectivity_percentile': selectivity_percentiles.get(school),
+                'waitlist_rate': school_waitlist_rates.get(school, 0.15),
                 'domain': domain,
                 'is_t14': school in T14,
                 'stats': stats,
@@ -312,12 +342,33 @@ def predict():
         # Sort by selectivity descending (most competitive first)
         predictions.sort(key=lambda x: x['selectivity'], reverse=True)
 
+        # ── Prediction Confidence ──────────────────────────────────
+        # Based on how much profile data was provided
+        confidence_factors = []
+        if softs > 0:
+            confidence_factors.append('softs')
+        if years_out > 0:
+            confidence_factors.append('years_out')
+        if has_we:
+            confidence_factors.append('work_exp')
+        if has_decisions:
+            confidence_factors.append('decisions')
+
+        if len(confidence_factors) >= 3:
+            confidence = 'high'
+        elif len(confidence_factors) >= 1:
+            confidence = 'standard'
+        else:
+            confidence = 'limited'
+
         return jsonify({
             'status': 'success',
             'predictions': predictions,
             'model_type': 'enhanced' if has_decisions else 'baseline',
             'is_urm': is_urm,
-            'applicant': {'lsat': lsat, 'gpa': gpa}
+            'applicant': {'lsat': lsat, 'gpa': gpa},
+            'confidence': confidence,
+            'confidence_factors': confidence_factors
         })
 
     except Exception as e:

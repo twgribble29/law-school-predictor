@@ -1,0 +1,41 @@
+{
+  "missingness": {
+    "softs_missing_pct": 64.9,
+    "years_out_missing_pct": 29.2
+  },
+  "strategy_comparison": {
+    "baseline": {
+      "val_auc": 0.9067,
+      "test_auc": 0.8747,
+      "val_brier": 0.1236,
+      "n_features": 11
+    },
+    "missing_indicators": {
+      "val_auc": 0.9066,
+      "test_auc": 0.8745,
+      "val_brier": 0.1236,
+      "n_features": 13
+    },
+    "imputed": {
+      "val_auc": 0.9067,
+      "test_auc": 0.8759,
+      "val_brier": 0.1236,
+      "n_features": 11
+    },
+    "native_nan": {
+      "val_auc": 0.9067,
+      "test_auc": 0.8747,
+      "val_brier": 0.1236,
+      "n_features": 11
+    },
+    "native_nan_indicators": {
+      "val_auc": 0.9067,
+      "test_auc": 0.8747,
+      "val_brier": 0.1236,
+      "n_features": 13
+    }
+  },
+  "best_strategy": "imputed",
+  "improvement_over_baseline": 0.0,
+  "recommendation": "Use 'imputed' strategy. It improves AUC by +0.0000 over the baseline approach of filling missing values with 0."
+}

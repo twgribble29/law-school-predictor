@@ -30,12 +30,16 @@
             <div class="form-grid-3">
                 <div class="form-group">
                     <label for="softs">Softs Tier
-                        <span class="info-tip">i<span class="tip-content"><strong>Softs Tiers</strong> rate your extracurriculars, leadership, and work quality:<br>
-                        <strong>T1:</strong> Exceptional (Rhodes Scholar, Olympic athlete, published author)<br>
-                        <strong>T2:</strong> Strong (significant leadership, notable achievements)<br>
-                        <strong>T3:</strong> Average (standard clubs, volunteering, internships)<br>
-                        <strong>T4:</strong> Weak (minimal activities)<br>
-                        <a href="https://www.lsd.law" target="_blank">Learn more at LSD.Law</a></span></span>
+                        <span class="info-tip">i<span class="tip-content"><strong>What are "Softs"?</strong><br>
+                        Softs are non-numerical components of your application, including work experience, extracurriculars, personal statements, and letters of recommendation.<br><br>
+                        <strong>Tier Definitions:</strong>
+                        <ul>
+                            <li><strong>T1 (Exceptional):</strong> Rhodes/Marshall/Fulbright Scholar, Olympic athlete, patents, significant publications, elite military service, senior leadership at major organizations</li>
+                            <li><strong>T2 (Strong):</strong> Peace Corps, Teach For America, AmeriCorps, impressive work experience (3+ years), noteworthy internships, student body president, Division I athlete, published research</li>
+                            <li><strong>T3 (Average):</strong> Standard internships, typical club leadership, good letters of recommendation, decent work experience (1-2 years), volunteer work, study abroad</li>
+                            <li><strong>T4 (Weakest):</strong> Minimal to no relevant work experience, standard extracurriculars, no significant leadership roles</li>
+                        </ul>
+                        <a href="https://www.lsd.law/softs" target="_blank" rel="noopener noreferrer">Read more about softs at LSD.Law &rarr;</a></span></span>
                     </label>
                     <select id="softs">
                         <option value="0">Not Reported</option>
@@ -55,6 +59,14 @@
                         <option value="150">January (Very Late)</option>
                         <option value="180">February+ (Rolling)</option>
                     </select>
+                    <button type="button" class="date-toggle-btn" id="toggle-exact-date" onclick="toggleExactDate()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                        Know your exact date?
+                    </button>
+                    <div id="exact-date-picker" style="display:none; margin-top:6px;">
+                        <input type="date" id="exact-date" min="2024-09-01" max="2025-08-31" class="exact-date-input" onchange="updateTimingFromDate(this.value)">
+                        <span class="helper-text" style="font-size:0.82rem; display:block; margin-top:3px;">We'll calculate timing days automatically</span>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label for="years_out">Years Since Undergrad</label>
@@ -98,6 +110,33 @@
 
             <div id="selected-schools" class="selected-schools"></div>
             <p id="school-count" class="helper-text">No schools selected</p>
+        </section>
+
+        <!-- Import Profile Section (Optional) -->
+        <section class="card" id="import-section">
+            <h2 class="card-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                Import Profile
+                <span class="optional-tag">Optional</span>
+            </h2>
+            <p class="helper-text" style="margin-bottom:12px">Paste your LSD.Law profile data or upload a CSV to auto-fill your stats, schools, and decisions.</p>
+
+            <div class="import-tabs">
+                <button type="button" class="import-tab active" onclick="switchImportTab('paste')" id="tab-paste">Paste JSON</button>
+                <button type="button" class="import-tab" onclick="switchImportTab('csv')" id="tab-csv">Upload CSV</button>
+            </div>
+
+            <div id="import-paste" class="import-panel">
+                <textarea id="import-json" class="import-textarea" rows="5" placeholder='{"lsat": 170, "gpa": 3.8, "schools": ["Yale University", "Harvard University"], "decisions": [{"school": "Columbia University", "result": "Accepted"}]}'></textarea>
+                <button type="button" class="chip-btn" onclick="importFromJSON()" style="margin-top:8px;">Import Data</button>
+            </div>
+
+            <div id="import-csv" class="import-panel" style="display:none;">
+                <input type="file" id="csv-upload" accept=".csv,.tsv" class="csv-input" onchange="importFromCSV(event)">
+                <p class="helper-text" style="margin-top:6px; font-size:0.82rem;">CSV should have columns: school_name, result (Accepted/Waitlisted/Rejected). Optionally include lsat, gpa.</p>
+            </div>
+
+            <div id="import-status" style="margin-top:8px;"></div>
         </section>
 
         <!-- Decisions Section (Optional) -->
@@ -259,6 +298,175 @@ function addDecision() {
     decisionCount++;
 }
 
+// ── Exact Date Picker ──────────────────────────────────────────────
+function toggleExactDate() {
+    const picker = document.getElementById('exact-date-picker');
+    const btn = document.getElementById('toggle-exact-date');
+    const select = document.getElementById('timing');
+    if (picker.style.display === 'none') {
+        picker.style.display = 'block';
+        select.disabled = true;
+        select.style.opacity = '0.5';
+        btn.textContent = 'Use month selector instead';
+    } else {
+        picker.style.display = 'none';
+        select.disabled = false;
+        select.style.opacity = '1';
+        btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> Know your exact date?';
+        document.getElementById('exact-date').value = '';
+    }
+}
+
+function updateTimingFromDate(dateStr) {
+    if (!dateStr) return;
+    const date = new Date(dateStr);
+    // Calculate days after September 1 of the cycle year
+    const cycleYear = date.getMonth() >= 8 ? date.getFullYear() : date.getFullYear() - 1;
+    const sept1 = new Date(cycleYear, 8, 1); // Sept 1
+    const diffDays = Math.max(1, Math.round((date - sept1) / (1000 * 60 * 60 * 24)));
+    // Store the computed value as a data attribute
+    document.getElementById('exact-date').dataset.timingDays = diffDays;
+}
+
+function getTimingDays() {
+    const exactDate = document.getElementById('exact-date');
+    if (exactDate.value && exactDate.dataset.timingDays) {
+        return parseInt(exactDate.dataset.timingDays);
+    }
+    return parseInt(document.getElementById('timing').value);
+}
+
+// ── Import Profile ────────────────────────────────────────────────
+function switchImportTab(tab) {
+    document.getElementById('import-paste').style.display = tab === 'paste' ? 'block' : 'none';
+    document.getElementById('import-csv').style.display = tab === 'csv' ? 'block' : 'none';
+    document.getElementById('tab-paste').classList.toggle('active', tab === 'paste');
+    document.getElementById('tab-csv').classList.toggle('active', tab === 'csv');
+}
+
+function importFromJSON() {
+    const raw = document.getElementById('import-json').value.trim();
+    const status = document.getElementById('import-status');
+    if (!raw) { status.innerHTML = '<span style="color:var(--coral-500)">Please paste your profile data.</span>'; return; }
+
+    try {
+        const data = JSON.parse(raw);
+        let imported = [];
+
+        // Fill stats
+        if (data.lsat) { document.getElementById('lsat').value = data.lsat; imported.push('LSAT'); }
+        if (data.gpa) { document.getElementById('gpa').value = data.gpa; imported.push('GPA'); }
+        if (data.softs != null) { document.getElementById('softs').value = data.softs; imported.push('Softs'); }
+        if (data.is_urm != null) { document.getElementById('urm').checked = !!data.is_urm; imported.push('URM'); }
+        if (data.has_we != null || data.work_experience != null) {
+            document.getElementById('has_we').checked = !!(data.has_we || data.work_experience);
+            imported.push('Work Experience');
+        }
+        if (data.years_out != null) { document.getElementById('years_out').value = data.years_out; imported.push('Years Out'); }
+
+        // Add schools
+        if (data.schools && Array.isArray(data.schools)) {
+            data.schools.forEach(s => {
+                const name = typeof s === 'string' ? s : s.name;
+                if (name && ALL_SCHOOLS.find(sch => sch.name === name)) {
+                    addSchool(name);
+                }
+            });
+            imported.push(data.schools.length + ' schools');
+        }
+
+        // Add decisions
+        if (data.decisions && Array.isArray(data.decisions)) {
+            data.decisions.forEach(d => {
+                if (d.school && d.result) {
+                    addDecision();
+                    const rows = document.querySelectorAll('.decision-row');
+                    const lastRow = rows[rows.length - 1];
+                    const schoolSelect = lastRow.querySelector('.decision-school');
+                    const resultSelect = lastRow.querySelector('.decision-result');
+                    // Try to match school name
+                    for (let opt of schoolSelect.options) {
+                        if (opt.value === d.school) { schoolSelect.value = d.school; break; }
+                    }
+                    resultSelect.value = d.result;
+                }
+            });
+            imported.push(data.decisions.length + ' decisions');
+        }
+
+        status.innerHTML = `<span style="color:var(--green-600)">Imported: ${imported.join(', ')}</span>`;
+    } catch (e) {
+        status.innerHTML = `<span style="color:var(--coral-500)">Invalid JSON: ${e.message}</span>`;
+    }
+}
+
+function importFromCSV(event) {
+    const file = event.target.files[0];
+    const status = document.getElementById('import-status');
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const text = e.target.result;
+            const sep = text.includes('\t') ? '\t' : ',';
+            const lines = text.trim().split('\n');
+            const headers = lines[0].split(sep).map(h => h.trim().toLowerCase().replace(/"/g, ''));
+
+            const schoolCol = headers.findIndex(h => h.includes('school'));
+            const resultCol = headers.findIndex(h => h.includes('result') || h.includes('decision') || h.includes('status'));
+            const lsatCol = headers.findIndex(h => h === 'lsat');
+            const gpaCol = headers.findIndex(h => h === 'gpa');
+
+            let schoolsAdded = 0, decisionsAdded = 0;
+
+            // Fill LSAT/GPA from first data row if available
+            if (lines.length > 1) {
+                const firstRow = lines[1].split(sep).map(v => v.trim().replace(/"/g, ''));
+                if (lsatCol >= 0 && firstRow[lsatCol]) {
+                    document.getElementById('lsat').value = parseFloat(firstRow[lsatCol]);
+                }
+                if (gpaCol >= 0 && firstRow[gpaCol]) {
+                    document.getElementById('gpa').value = parseFloat(firstRow[gpaCol]);
+                }
+            }
+
+            for (let i = 1; i < lines.length; i++) {
+                const vals = lines[i].split(sep).map(v => v.trim().replace(/"/g, ''));
+                if (vals.length < 2) continue;
+
+                const schoolName = schoolCol >= 0 ? vals[schoolCol] : '';
+                const result = resultCol >= 0 ? vals[resultCol] : '';
+
+                if (schoolName) {
+                    // Find matching school
+                    const match = ALL_SCHOOLS.find(s => s.name.toLowerCase().includes(schoolName.toLowerCase()) || schoolName.toLowerCase().includes(s.name.toLowerCase()));
+                    if (match) {
+                        addSchool(match.name);
+                        schoolsAdded++;
+
+                        // If there's a result, add as decision
+                        if (result && ['accepted', 'waitlisted', 'rejected'].includes(result.toLowerCase())) {
+                            addDecision();
+                            const rows = document.querySelectorAll('.decision-row');
+                            const lastRow = rows[rows.length - 1];
+                            lastRow.querySelector('.decision-school').value = match.name;
+                            const resultVal = result.charAt(0).toUpperCase() + result.slice(1).toLowerCase();
+                            lastRow.querySelector('.decision-result').value = resultVal;
+                            decisionsAdded++;
+                        }
+                    }
+                }
+            }
+
+            status.innerHTML = `<span style="color:var(--green-600)">Imported ${schoolsAdded} schools, ${decisionsAdded} decisions from CSV</span>`;
+        } catch (e) {
+            status.innerHTML = `<span style="color:var(--coral-500)">Error parsing CSV: ${e.message}</span>`;
+        }
+    };
+    reader.readAsText(file);
+}
+
 // ── Form Submission ────────────────────────────────────────────────
 document.getElementById('prediction-form').addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -284,7 +492,7 @@ document.getElementById('prediction-form').addEventListener('submit', async (e) 
     const payload = {
         lsat,
         gpa,
-        timing_days: parseInt(document.getElementById('timing').value),
+        timing_days: getTimingDays(),
         softs: parseInt(document.getElementById('softs').value),
         is_urm: document.getElementById('urm').checked,
         has_we: document.getElementById('has_we').checked,
@@ -318,12 +526,13 @@ document.getElementById('prediction-form').addEventListener('submit', async (e) 
     }
 });
 
-// ── Box-and-Whisker SVG Builder ────────────────────────────────────
+// ── Box-and-Whisker SVG Builder (Enhanced) ────────────────────────
 function buildBoxWhisker(label, min, q25, q50, q75, max, applicantVal, scaleMin, scaleMax) {
-    const W = 240, H = 36, PAD = 20;
+    const W = 280, H = 56, PAD = 24, TOP = 20;
     const plotW = W - PAD * 2;
     const range = scaleMax - scaleMin || 1;
     const x = v => PAD + ((v - scaleMin) / range) * plotW;
+    const midY = TOP + 14;
 
     const boxL = x(q25), boxR = x(q75), medX = x(q50);
     const whiskerL = x(min), whiskerR = x(max);
@@ -332,22 +541,83 @@ function buildBoxWhisker(label, min, q25, q50, q75, max, applicantVal, scaleMin,
     // Determine if applicant is above/below median
     const appColor = applicantVal >= q50 ? '#2D9B83' : '#E76F51';
 
-    return `<svg viewBox="0 0 ${W} ${H}" class="bw-chart">
+    // Format value for display
+    const fmt = label === 'LSAT' ? v => Math.round(v) : v => v.toFixed(2);
+
+    return `<svg viewBox="0 0 ${W} ${H}" class="bw-chart" style="height:56px">
+        <!-- Bold label -->
+        <text x="2" y="12" font-size="10" font-weight="600" fill="#3D4F47" font-family="Inter,sans-serif">${label}</text>
+        <!-- Quartile value labels -->
+        <text x="${boxL}" y="12" font-size="7.5" fill="#8FA69C" font-family="Inter,sans-serif" text-anchor="middle">${fmt(q25)}</text>
+        <text x="${medX}" y="12" font-size="7.5" font-weight="600" fill="#1B6B4F" font-family="Inter,sans-serif" text-anchor="middle">${fmt(q50)}</text>
+        <text x="${boxR}" y="12" font-size="7.5" fill="#8FA69C" font-family="Inter,sans-serif" text-anchor="middle">${fmt(q75)}</text>
         <!-- Whisker line -->
-        <line x1="${whiskerL}" y1="18" x2="${whiskerR}" y2="18" stroke="#B4C7BF" stroke-width="1.5"/>
+        <line x1="${whiskerL}" y1="${midY}" x2="${whiskerR}" y2="${midY}" stroke="#B4C7BF" stroke-width="1.5"/>
         <!-- Whisker caps -->
-        <line x1="${whiskerL}" y1="12" x2="${whiskerL}" y2="24" stroke="#B4C7BF" stroke-width="1.5"/>
-        <line x1="${whiskerR}" y1="12" x2="${whiskerR}" y2="24" stroke="#B4C7BF" stroke-width="1.5"/>
+        <line x1="${whiskerL}" y1="${midY-6}" x2="${whiskerL}" y2="${midY+6}" stroke="#B4C7BF" stroke-width="1.5"/>
+        <line x1="${whiskerR}" y1="${midY-6}" x2="${whiskerR}" y2="${midY+6}" stroke="#B4C7BF" stroke-width="1.5"/>
         <!-- Box (IQR) -->
-        <rect x="${boxL}" y="8" width="${boxR - boxL}" height="20" rx="3" fill="#E8F7F3" stroke="#86D9C2" stroke-width="1.5"/>
+        <rect x="${boxL}" y="${midY-10}" width="${boxR - boxL}" height="20" rx="3" fill="#E8F7F3" stroke="#86D9C2" stroke-width="1.5"/>
         <!-- Median line -->
-        <line x1="${medX}" y1="8" x2="${medX}" y2="28" stroke="#1B6B4F" stroke-width="2"/>
+        <line x1="${medX}" y1="${midY-10}" x2="${medX}" y2="${midY+10}" stroke="#1B6B4F" stroke-width="2.5"/>
         <!-- Applicant marker (diamond) -->
-        <polygon points="${appX},6 ${appX+6},18 ${appX},30 ${appX-6},18" fill="${appColor}" stroke="white" stroke-width="1"/>
-        <!-- Label -->
-        <text x="2" y="7" font-size="8" fill="#6B7F75" font-family="Inter,sans-serif">${label}</text>
+        <polygon points="${appX},${midY-12} ${appX+6},${midY} ${appX},${midY+12} ${appX-6},${midY}" fill="${appColor}" stroke="white" stroke-width="1"/>
+        <!-- Applicant value label -->
+        <text x="${appX}" y="${midY+22}" font-size="7.5" font-weight="600" fill="${appColor}" font-family="Inter,sans-serif" text-anchor="middle">${fmt(applicantVal)}</text>
+        <!-- Min/max labels -->
+        <text x="${whiskerL}" y="${midY+16}" font-size="7" fill="#B4C7BF" font-family="Inter,sans-serif" text-anchor="middle">${fmt(min)}</text>
+        <text x="${whiskerR}" y="${midY+16}" font-size="7" fill="#B4C7BF" font-family="Inter,sans-serif" text-anchor="middle">${fmt(max)}</text>
     </svg>`;
 }
+
+// ── Mobile Tooltip System ──────────────────────────────────────────
+(function initMobileTooltips() {
+    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
+    document.querySelectorAll('.info-tip').forEach(tip => {
+        const content = tip.querySelector('.tip-content');
+        if (!content) return;
+
+        if (isTouchDevice) {
+            tip.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                // Close any other open tooltips
+                document.querySelectorAll('.tip-content.show').forEach(t => {
+                    if (t !== content) t.classList.remove('show');
+                });
+
+                content.classList.toggle('show');
+
+                // Position for mobile if needed
+                if (content.classList.contains('show') && window.innerWidth < 768) {
+                    const rect = tip.getBoundingClientRect();
+                    content.style.position = 'fixed';
+                    content.style.left = '50%';
+                    content.style.transform = 'translateX(-50%)';
+                    content.style.width = 'calc(100vw - 2rem)';
+                    content.style.maxWidth = '360px';
+                    content.style.zIndex = '9999';
+                    if (rect.top > window.innerHeight / 2) {
+                        content.style.bottom = (window.innerHeight - rect.top + 8) + 'px';
+                        content.style.top = 'auto';
+                    } else {
+                        content.style.top = (rect.bottom + 8) + 'px';
+                        content.style.bottom = 'auto';
+                    }
+                }
+            });
+        }
+    });
+
+    // Close tooltips when tapping outside
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.info-tip')) {
+            document.querySelectorAll('.tip-content.show').forEach(t => t.classList.remove('show'));
+        }
+    });
+})();
 
 // ── Render Results ─────────────────────────────────────────────────
 function renderResults(data) {
@@ -368,7 +638,21 @@ function renderResults(data) {
         ? 'Enhanced Model (using decisions)'
         : 'Baseline Model';
     const urmText = data.is_urm ? 'URM' : 'Non-URM';
-    document.getElementById('model-info').textContent = `${modelType} \u00b7 ${urmText}`;
+
+    // Confidence badge
+    const conf = data.confidence || 'standard';
+    const confLabels = {
+        high: 'High Confidence',
+        standard: 'Standard Confidence',
+        limited: 'Limited Data'
+    };
+    const confTips = {
+        high: 'You provided detailed profile information, so these predictions are well-calibrated.',
+        standard: 'Predictions are based on core stats. Adding softs, work experience, or decisions can improve accuracy.',
+        limited: 'Only LSAT and GPA are being used. Add more profile data for better-calibrated predictions.'
+    };
+    document.getElementById('model-info').innerHTML =
+        `${modelType} &middot; ${urmText} &middot; <span class="confidence-badge ${conf}" title="${confTips[conf]}">${confLabels[conf]}</span>`;
 
     grid.innerHTML = '';
 
@@ -391,11 +675,22 @@ function renderResults(data) {
                     ${buildBoxWhisker('GPA', st.gpa_min, st.gpa_25, st.gpa_50, st.gpa_75, st.gpa_max, app.gpa, st.gpa_min - 0.1, st.gpa_max + 0.1)}
                 </div>
                 <div class="bw-legend">
-                    <span class="bw-legend-item"><span class="bw-swatch" style="background:#E8F7F3;border:1px solid #86D9C2"></span>25th-75th of admits</span>
+                    <span class="bw-legend-item"><span class="bw-swatch" style="background:#E8F7F3;border:1px solid #86D9C2"></span>25th&ndash;75th of admits</span>
                     <span class="bw-legend-item"><span class="bw-swatch" style="background:#1B6B4F"></span>Median</span>
                     <span class="bw-legend-item"><svg width="10" height="10" viewBox="0 0 10 10"><polygon points="5,0 10,5 5,10 0,5" fill="#2D9B83"/></svg> You</span>
                 </div>`;
         }
+
+        // Compute waitlist & reject estimates from accept probability
+        const pAccept = pred.probability;
+        const wlFraction = pred.waitlist_rate || 0.15;
+        const pWaitlist = Math.round((100 - pAccept) * wlFraction * 10) / 10;
+        const pReject = Math.round((100 - pAccept - pWaitlist) * 10) / 10;
+
+        // Selectivity percentile label
+        const selPctHtml = pred.selectivity_percentile != null
+            ? `${Math.round(pred.selectivity_percentile)}th percentile`
+            : `Selectivity: ${pred.selectivity}`;
 
         const card = document.createElement('div');
         card.className = `result-card ${catClass}`;
@@ -407,12 +702,32 @@ function renderResults(data) {
                         : '<div class="result-logo-placeholder"></div>'}
                     <div>
                         <div class="result-school-name">${pred.school}${decisionMap[pred.school] ? `<span class="decision-badge ${decisionMap[pred.school].toLowerCase()}">${decisionMap[pred.school]}</span>` : ''}</div>
-                        <div class="result-meta">${pred.is_t14 ? '<span class="t14-badge">T14</span> ' : ''}Selectivity: ${pred.selectivity}</div>
+                        <div class="result-meta">${pred.is_t14 ? '<span class="t14-badge">T14</span> ' : ''}${selPctHtml}</div>
                     </div>
                 </div>
                 <div class="result-prob-wrap">
                     <div class="result-prob ${catClass}">${pred.probability}%</div>
                     <div class="result-category ${catClass}">${category}</div>
+                </div>
+            </div>
+            <div class="outcome-bars">
+                <div class="outcome-row">
+                    <span class="outcome-label"><span class="outcome-icon accept">&#10003;</span> Accept</span>
+                    <div class="probability-bar">
+                        <div class="bar-fill accept" style="width:${Math.max(pAccept, 3)}%"><span class="bar-pct">${pAccept}%</span></div>
+                    </div>
+                </div>
+                <div class="outcome-row">
+                    <span class="outcome-label"><span class="outcome-icon waitlist">&#8214;</span> Waitlist</span>
+                    <div class="probability-bar">
+                        <div class="bar-fill waitlist" style="width:${Math.max(pWaitlist, 3)}%"><span class="bar-pct">${pWaitlist}%</span></div>
+                    </div>
+                </div>
+                <div class="outcome-row">
+                    <span class="outcome-label"><span class="outcome-icon reject">&#10007;</span> Reject</span>
+                    <div class="probability-bar">
+                        <div class="bar-fill reject" style="width:${Math.max(pReject, 3)}%"><span class="bar-pct">${pReject}%</span></div>
+                    </div>
                 </div>
             </div>
             ${chartsHtml}
@@ -421,9 +736,6 @@ function renderResults(data) {
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
                 ${pred.marginal.label} &rarr; <span class="marginal-delta">+${pred.marginal.delta}%</span> probability
             </div>` : ''}
-            <div class="result-bar-bg">
-                <div class="result-bar ${catClass}" style="width:${Math.min(pred.probability, 100)}%"></div>
-            </div>
         `;
         grid.appendChild(card);
     });

@@ -1462,10 +1462,391 @@ body {
     margin-bottom: 0;
 }
 
+/* ── About Page ─────────────────────────────────────────────────── */
+
+.about-section {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 40px 24px 60px;
+}
+
+.about-header {
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+    margin-bottom: 2.5rem;
+    padding-bottom: 2rem;
+    border-bottom: 2px solid var(--gray-100);
+}
+
+.about-photo {
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: var(--shadow-md);
+    flex-shrink: 0;
+}
+
+.about-header-info h1 {
+    font-size: 1.25rem;
+    color: var(--gray-500);
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.about-header-info h2 {
+    font-size: 2rem;
+    margin: 0 0 0.5rem 0;
+    color: var(--green-800);
+    border: none;
+    padding: 0;
+}
+
+.about-tagline {
+    font-size: 1.1rem;
+    color: var(--gray-500);
+    margin-bottom: 1rem;
+}
+
+.linkedin-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1.2rem;
+    background: #0077b5;
+    color: white;
+    text-decoration: none;
+    border-radius: 6px;
+    font-weight: 500;
+    transition: background var(--transition);
+}
+
+.linkedin-link:hover {
+    background: #006399;
+}
+
+.linkedin-link svg {
+    width: 18px;
+    height: 18px;
+    fill: currentColor;
+}
+
+.about-body p {
+    font-size: 1.1rem;
+    line-height: 1.7;
+    margin-bottom: 1.25rem;
+    color: var(--gray-700);
+}
+
+/* ── Prediction Outcome Bars ───────────────────────────────────── */
+
+.outcome-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 10px;
+    margin-bottom: 6px;
+}
+
+.outcome-row {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.outcome-label {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-weight: 600;
+    font-size: 0.88rem;
+    color: var(--gray-700);
+}
+
+.outcome-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    font-weight: bold;
+    font-size: 0.7rem;
+    color: white;
+    flex-shrink: 0;
+}
+
+.outcome-icon.accept { background: var(--green-500); }
+.outcome-icon.waitlist { background: var(--amber-500); }
+.outcome-icon.reject { background: var(--coral-500); }
+
+.probability-bar {
+    position: relative;
+    height: 28px;
+    background: var(--gray-100);
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.bar-fill {
+    height: 100%;
+    transition: width 0.5s ease;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 0.5rem;
+    min-width: 2.5rem;
+}
+
+.bar-fill.accept {
+    background: linear-gradient(90deg, var(--green-400), var(--green-500));
+}
+
+.bar-fill.waitlist {
+    background: linear-gradient(90deg, var(--amber-400), var(--amber-500));
+}
+
+.bar-fill.reject {
+    background: linear-gradient(90deg, var(--coral-400), var(--coral-500));
+}
+
+.bar-pct {
+    color: white;
+    font-weight: 700;
+    font-size: 0.82rem;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.25);
+    white-space: nowrap;
+}
+
+/* ── Date Picker Toggle ────────────────────────────────────────── */
+
+.date-toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 6px;
+    padding: 0;
+    border: none;
+    background: none;
+    font-size: 0.82rem;
+    font-family: inherit;
+    color: var(--green-500);
+    cursor: pointer;
+    transition: color var(--transition);
+}
+
+.date-toggle-btn:hover {
+    color: var(--green-700);
+}
+
+.exact-date-input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1.5px solid var(--gray-200);
+    border-radius: var(--radius-sm);
+    font-size: 1rem;
+    font-family: inherit;
+    color: var(--gray-900);
+    background: var(--white);
+}
+
+.exact-date-input:focus {
+    outline: none;
+    border-color: var(--green-500);
+    box-shadow: 0 0 0 3px rgba(45,155,131,0.15);
+}
+
+/* ── Import Profile Section ────────────────────────────────────── */
+
+.import-tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 12px;
+}
+
+.import-tab {
+    padding: 6px 16px;
+    border: 1.5px solid var(--gray-200);
+    background: var(--white);
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-family: inherit;
+    font-weight: 500;
+    color: var(--gray-500);
+    cursor: pointer;
+    transition: all var(--transition);
+}
+
+.import-tab.active {
+    background: var(--green-100);
+    border-color: var(--green-300);
+    color: var(--green-700);
+}
+
+.import-tab:hover:not(.active) {
+    border-color: var(--green-400);
+    color: var(--green-600);
+}
+
+.import-textarea {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1.5px solid var(--gray-200);
+    border-radius: var(--radius-sm);
+    font-size: 0.9rem;
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+    color: var(--gray-900);
+    background: var(--gray-50);
+    resize: vertical;
+    min-height: 100px;
+    transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.import-textarea:focus {
+    outline: none;
+    border-color: var(--green-500);
+    box-shadow: 0 0 0 3px rgba(45,155,131,0.15);
+    background: var(--white);
+}
+
+.import-textarea::placeholder {
+    color: var(--gray-400);
+    font-size: 0.82rem;
+}
+
+.csv-input {
+    width: 100%;
+    padding: 12px;
+    border: 1.5px dashed var(--gray-300);
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    color: var(--gray-700);
+    background: var(--gray-50);
+    cursor: pointer;
+}
+
+.csv-input:hover {
+    border-color: var(--green-400);
+    background: var(--green-50);
+}
+
+/* ── Mobile Tooltip Improvements ───────────────────────────────── */
+
+.info-tip {
+    /* Increase tap target on touch devices */
+    -webkit-tap-highlight-color: transparent;
+}
+
+.info-tip .tip-content {
+    pointer-events: none;
+}
+
+.info-tip .tip-content.show {
+    display: block;
+    pointer-events: auto;
+}
+
+.info-tip .tip-content strong {
+    color: var(--green-300);
+}
+
+.info-tip .tip-content ul {
+    margin: 6px 0 6px 16px;
+    padding: 0;
+    list-style: disc;
+}
+
+.info-tip .tip-content li {
+    margin-bottom: 4px;
+    line-height: 1.4;
+}
+
+/* ── Confidence Badge ──────────────────────────────────────────── */
+
+.confidence-badge {
+    display: inline-block;
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 2px 10px;
+    border-radius: 999px;
+    letter-spacing: 0.02em;
+    cursor: help;
+}
+
+.confidence-badge.high {
+    background: var(--green-100);
+    color: var(--green-700);
+}
+
+.confidence-badge.standard {
+    background: #FFF8E1;
+    color: #F59E0B;
+}
+
+.confidence-badge.limited {
+    background: #FEE2E2;
+    color: #DC2626;
+}
+
 /* ── Responsive ──────────────────────────────────────────────────── */
 
+@media (max-width: 768px) {
+    /* Navigation spacing */
+    .nav-inner {
+        padding: 0 12px;
+        height: 56px;
+    }
+
+    .nav-links {
+        gap: 2px;
+    }
+
+    .nav-link {
+        font-size: 0.88rem;
+        padding: 6px 10px;
+        white-space: nowrap;
+    }
+
+    /* About page */
+    .about-header {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .about-photo {
+        width: 150px;
+        height: 150px;
+    }
+
+    .about-header-info {
+        text-align: center;
+    }
+
+    /* Outcome bars */
+    .outcome-row {
+        grid-template-columns: 100px 1fr;
+        gap: 0.5rem;
+    }
+
+    .outcome-label {
+        font-size: 0.82rem;
+    }
+
+    .probability-bar {
+        height: 24px;
+    }
+
+    /* Tooltips: position for mobile */
+    .info-tip .tip-content {
+        font-size: 0.84rem;
+        padding: 12px 14px;
+    }
+}
+
 @media (max-width: 640px) {
-    .nav-inner { padding: 0 16px; }
+    .nav-inner { padding: 0 12px; }
     .nav-brand span { display: none; }
     .container, .content-page { padding: 20px 16px 40px; }
     .hero h1 { font-size: 1.85rem; }
@@ -1495,4 +1876,32 @@ body {
     .summary-actions { flex-direction: column; }
     .info-tip .tip-content { width: 220px; left: auto; right: -10px; transform: none; }
     .info-tip .tip-content::after { left: auto; right: 16px; }
+
+    /* Outcome bars stacked on small screens */
+    .outcome-row {
+        grid-template-columns: 1fr;
+        gap: 0.25rem;
+    }
+}
+
+@media (max-width: 480px) {
+    /* Stack navigation vertically on very small screens */
+    .nav-inner {
+        flex-direction: column;
+        height: auto;
+        padding: 8px 12px;
+        gap: 4px;
+    }
+
+    .nav-links {
+        width: 100%;
+        justify-content: center;
+        gap: 2px;
+    }
+
+    .nav-link {
+        font-size: 0.82rem;
+        padding: 6px 8px;
+        text-align: center;
+    }
 }
