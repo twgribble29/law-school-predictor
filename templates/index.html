@@ -52,12 +52,12 @@
                 <div class="form-group">
                     <label for="timing">Application Timing</label>
                     <select id="timing">
-                        <option value="30">September (Very Early)</option>
-                        <option value="60">October (Early)</option>
-                        <option value="90" selected>November (Standard)</option>
-                        <option value="120">December (Late)</option>
-                        <option value="150">January (Very Late)</option>
-                        <option value="180">February+ (Rolling)</option>
+                        <option value="30">September</option>
+                        <option value="60">October</option>
+                        <option value="90" selected>November</option>
+                        <option value="120">December</option>
+                        <option value="150">January</option>
+                        <option value="180">February+</option>
                     </select>
                     <button type="button" class="date-toggle-btn" id="toggle-exact-date" onclick="toggleExactDate()">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
@@ -112,8 +112,8 @@
             <p id="school-count" class="helper-text">No schools selected</p>
         </section>
 
-        <!-- Import Profile Section (Optional) -->
-        <section class="card" id="import-section">
+        <!-- Import Profile Section (Optional) - Hidden for now -->
+        <section class="card" id="import-section" style="display:none">
             <h2 class="card-title">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                 Import Profile
@@ -171,8 +171,8 @@
             <p id="model-info" class="model-badge"></p>
         </div>
 
-        <div class="results-grid" id="results-grid"></div>
         <div id="summary-panel" class="summary-panel" style="display:none"></div>
+        <div class="results-grid" id="results-grid"></div>
     </section>
 </div>
 {% endblock %}
@@ -185,6 +185,51 @@ const T25_NAMES = ALL_SCHOOLS.filter(s => ALL_SCHOOLS.indexOf(s) < 25).map(s => 
 
 let selectedSchools = new Set();
 
+// ── School Abbreviation Map ────────────────────────────────────────
+const SCHOOL_ALIASES = {
+    'nyu': 'New York University',
+    'ucla': 'University of California\u2014Los Angeles',
+    'uc berkeley': 'University of California\u2014Berkeley',
+    'berkeley': 'University of California\u2014Berkeley',
+    'cal berkeley': 'University of California\u2014Berkeley',
+    'uva': 'University of Virginia',
+    'umich': 'University of Michigan',
+    'upenn': 'University of Pennsylvania',
+    'penn': 'University of Pennsylvania',
+    'uchicago': 'University of Chicago',
+    'chicago': 'University of Chicago',
+    'gulc': 'Georgetown University',
+    'gtown': 'Georgetown University',
+    'byu': 'Brigham Young University',
+    'bu': 'Boston University',
+    'bc': 'Boston College',
+    'wustl': 'Washington University in St. Louis',
+    'wash u': 'Washington University in St. Louis',
+    'unc': 'University of North Carolina',
+    'osu': 'Ohio State University',
+    'ut austin': 'University of Texas at Austin',
+    'ut': 'University of Texas at Austin',
+    'asu': 'Arizona State University',
+    'gw': 'George Washington University',
+    'gwu': 'George Washington University',
+    'gmu': 'George Mason University',
+    'smu': 'Southern Methodist University',
+    'usc': 'University of Southern California',
+    'nd': 'University of Notre Dame',
+    'notre dame': 'University of Notre Dame',
+    'ufl': 'University of Florida',
+    'uga': 'University of Georgia',
+};
+
+function matchesSchool(school, query) {
+    if (school.name.toLowerCase().includes(query)) return true;
+    // Check if query matches any alias for this school
+    for (const [alias, fullName] of Object.entries(SCHOOL_ALIASES)) {
+        if (alias.includes(query) && fullName === school.name) return true;
+    }
+    return false;
+}
+
 // ── School Search & Selection ──────────────────────────────────────
 const searchInput = document.getElementById('school-search');
 const dropdown = document.getElementById('school-dropdown');
@@ -195,9 +240,21 @@ searchInput.addEventListener('input', function() {
     dropdown.innerHTML = '';
     if (query.length < 2) { dropdown.style.display = 'none'; return; }
 
+    // Check for exact alias match first
+    const aliasMatch = SCHOOL_ALIASES[query];
+
     const matches = ALL_SCHOOLS.filter(s =>
-        s.name.toLowerCase().includes(query) && !selectedSchools.has(s.name)
+        matchesSchool(s, query) && !selectedSchools.has(s.name)
     ).slice(0, 10);
+
+    // Sort: put exact alias match first if present
+    if (aliasMatch) {
+        matches.sort((a, b) => {
+            if (a.name === aliasMatch) return -1;
+            if (b.name === aliasMatch) return 1;
+            return 0;
+        });
+    }
 
     if (matches.length === 0) { dropdown.style.display = 'none'; return; }
 
@@ -570,54 +627,77 @@ function buildBoxWhisker(label, min, q25, q50, q75, max, applicantVal, scaleMin,
     </svg>`;
 }
 
-// ── Mobile Tooltip System ──────────────────────────────────────────
-(function initMobileTooltips() {
-    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-
+// ── Tooltip System (Click-to-toggle on all devices) ───────────────
+(function initTooltips() {
     document.querySelectorAll('.info-tip').forEach(tip => {
         const content = tip.querySelector('.tip-content');
         if (!content) return;
 
-        if (isTouchDevice) {
-            tip.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
+        tip.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
 
-                // Close any other open tooltips
-                document.querySelectorAll('.tip-content.show').forEach(t => {
-                    if (t !== content) t.classList.remove('show');
-                });
+            // Close any other open tooltips
+            document.querySelectorAll('.tip-content.show').forEach(t => {
+                if (t !== content) t.classList.remove('show');
+            });
 
-                content.classList.toggle('show');
+            content.classList.toggle('show');
 
-                // Position for mobile if needed
-                if (content.classList.contains('show') && window.innerWidth < 768) {
-                    const rect = tip.getBoundingClientRect();
-                    content.style.position = 'fixed';
-                    content.style.left = '50%';
-                    content.style.transform = 'translateX(-50%)';
-                    content.style.width = 'calc(100vw - 2rem)';
-                    content.style.maxWidth = '360px';
-                    content.style.zIndex = '9999';
-                    if (rect.top > window.innerHeight / 2) {
-                        content.style.bottom = (window.innerHeight - rect.top + 8) + 'px';
-                        content.style.top = 'auto';
-                    } else {
-                        content.style.top = (rect.bottom + 8) + 'px';
-                        content.style.bottom = 'auto';
-                    }
+            // Position for mobile: always center on screen
+            if (content.classList.contains('show') && window.innerWidth < 768) {
+                const rect = tip.getBoundingClientRect();
+                content.style.position = 'fixed';
+                content.style.left = '50%';
+                content.style.transform = 'translateX(-50%)';
+                content.style.width = 'calc(100vw - 2rem)';
+                content.style.maxWidth = '360px';
+                content.style.zIndex = '9999';
+                if (rect.top > window.innerHeight / 2) {
+                    content.style.bottom = (window.innerHeight - rect.top + 8) + 'px';
+                    content.style.top = 'auto';
+                } else {
+                    content.style.top = (rect.bottom + 8) + 'px';
+                    content.style.bottom = 'auto';
                 }
+            } else if (content.classList.contains('show')) {
+                // Desktop: reset any mobile positioning
+                content.style.position = '';
+                content.style.left = '';
+                content.style.transform = '';
+                content.style.width = '';
+                content.style.maxWidth = '';
+                content.style.zIndex = '';
+                content.style.top = '';
+                content.style.bottom = '';
+            }
+        });
+    });
+
+    // Close tooltips when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.info-tip')) {
+            document.querySelectorAll('.tip-content.show').forEach(t => {
+                t.classList.remove('show');
+                t.style.position = '';
+                t.style.left = '';
+                t.style.transform = '';
+                t.style.width = '';
+                t.style.maxWidth = '';
+                t.style.zIndex = '';
+                t.style.top = '';
+                t.style.bottom = '';
             });
         }
     });
-
-    // Close tooltips when tapping outside
-    document.addEventListener('click', function(e) {
-        if (!e.target.closest('.info-tip')) {
-            document.querySelectorAll('.tip-content.show').forEach(t => t.classList.remove('show'));
-        }
-    });
 })();
+
+// ── Ordinal Formatting Helper ──────────────────────────────────────
+function getOrdinal(n) {
+    const s = ['th', 'st', 'nd', 'rd'];
+    const v = n % 100;
+    return n + (s[(v - 20) % 10] || s[v] || s[0]);
+}
 
 // ── Render Results ─────────────────────────────────────────────────
 function renderResults(data) {
@@ -689,7 +769,7 @@ function renderResults(data) {
 
         // Selectivity percentile label
         const selPctHtml = pred.selectivity_percentile != null
-            ? `${Math.round(pred.selectivity_percentile)}th percentile`
+            ? `Selectivity: ${getOrdinal(Math.round(pred.selectivity_percentile))} percentile`
             : `Selectivity: ${pred.selectivity}`;
 
         const card = document.createElement('div');
@@ -701,7 +781,7 @@ function renderResults(data) {
                         ? `<img src="${logoUrl}" class="result-logo" alt="" onerror="this.classList.add('hidden')">`
                         : '<div class="result-logo-placeholder"></div>'}
                     <div>
-                        <div class="result-school-name">${pred.school}${decisionMap[pred.school] ? `<span class="decision-badge ${decisionMap[pred.school].toLowerCase()}">${decisionMap[pred.school]}</span>` : ''}</div>
+                        <div class="result-school-name"><a href="/schools?open=${encodeURIComponent(pred.school)}" class="school-name-link">${pred.school}</a>${decisionMap[pred.school] ? `<span class="decision-badge ${decisionMap[pred.school].toLowerCase()}">${decisionMap[pred.school]}</span>` : ''}</div>
                         <div class="result-meta">${pred.is_t14 ? '<span class="t14-badge">T14</span> ' : ''}${selPctHtml}</div>
                     </div>
                 </div>
@@ -714,19 +794,19 @@ function renderResults(data) {
                 <div class="outcome-row">
                     <span class="outcome-label"><span class="outcome-icon accept">&#10003;</span> Accept</span>
                     <div class="probability-bar">
-                        <div class="bar-fill accept" style="width:${Math.max(pAccept, 3)}%"><span class="bar-pct">${pAccept}%</span></div>
+                        <div class="bar-fill accept" style="width:${Math.max(pAccept, 2)}%"><span class="bar-pct ${pAccept < 15 ? 'outside' : 'inside'}">${pAccept}%</span></div>
                     </div>
                 </div>
                 <div class="outcome-row">
                     <span class="outcome-label"><span class="outcome-icon waitlist">&#8214;</span> Waitlist</span>
                     <div class="probability-bar">
-                        <div class="bar-fill waitlist" style="width:${Math.max(pWaitlist, 3)}%"><span class="bar-pct">${pWaitlist}%</span></div>
+                        <div class="bar-fill waitlist" style="width:${Math.max(pWaitlist, 2)}%"><span class="bar-pct ${pWaitlist < 15 ? 'outside' : 'inside'}">${pWaitlist}%</span></div>
                     </div>
                 </div>
                 <div class="outcome-row">
                     <span class="outcome-label"><span class="outcome-icon reject">&#10007;</span> Reject</span>
                     <div class="probability-bar">
-                        <div class="bar-fill reject" style="width:${Math.max(pReject, 3)}%"><span class="bar-pct">${pReject}%</span></div>
+                        <div class="bar-fill reject" style="width:${Math.max(pReject, 2)}%"><span class="bar-pct ${pReject < 15 ? 'outside' : 'inside'}">${pReject}%</span></div>
                     </div>
                 </div>
             </div>
@@ -802,11 +882,149 @@ function renderResults(data) {
                 Adjust &amp; re-predict
             </span>
         </div>
+        <div class="summary-actions" style="margin-top:10px;border-top:1px solid var(--gray-200);padding-top:14px;">
+            <span class="summary-action-link" onclick="copyShareLink()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
+                <span id="copy-link-text">Copy Shareable Link</span>
+            </span>
+            <span class="summary-action-link" onclick="downloadResultsImage()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Download as Image
+            </span>
+        </div>
     `;
     summaryPanel.style.display = 'block';
+
+    // Store current prediction data for sharing
+    window._lastPredictionPayload = {
+        lsat: parseInt(document.getElementById('lsat').value),
+        gpa: parseFloat(document.getElementById('gpa').value),
+        timing: document.getElementById('timing').value,
+        softs: document.getElementById('softs').value,
+        urm: document.getElementById('urm').checked ? '1' : '0',
+        we: document.getElementById('has_we').checked ? '1' : '0',
+        years: document.getElementById('years_out').value,
+        schools: Array.from(selectedSchools).join(',')
+    };
 
     section.style.display = 'block';
     section.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
+
+// ── Shareable Link ─────────────────────────────────────────────────
+function copyShareLink() {
+    const p = window._lastPredictionPayload;
+    if (!p) return;
+    const params = new URLSearchParams(p);
+    const url = window.location.origin + '/?' + params.toString();
+    navigator.clipboard.writeText(url).then(() => {
+        const el = document.getElementById('copy-link-text');
+        el.textContent = 'Link Copied!';
+        setTimeout(() => { el.textContent = 'Copy Shareable Link'; }, 2000);
+    }).catch(() => {
+        // Fallback for older browsers
+        const input = document.createElement('input');
+        input.value = url;
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand('copy');
+        document.body.removeChild(input);
+        const el = document.getElementById('copy-link-text');
+        el.textContent = 'Link Copied!';
+        setTimeout(() => { el.textContent = 'Copy Shareable Link'; }, 2000);
+    });
+}
+
+// ── Download Results as Image ──────────────────────────────────────
+function downloadResultsImage() {
+    const section = document.getElementById('results');
+    // Use canvas to capture the results section
+    const canvas = document.createElement('canvas');
+    const scale = 2; // High DPI
+    const rect = section.getBoundingClientRect();
+    canvas.width = rect.width * scale;
+    canvas.height = rect.height * scale;
+    const ctx = canvas.getContext('2d');
+    ctx.scale(scale, scale);
+    ctx.fillStyle = '#F6F8F7';
+    ctx.fillRect(0, 0, rect.width, rect.height);
+
+    // Simple text-based image of results
+    ctx.fillStyle = '#0D3B2C';
+    ctx.font = 'bold 24px Inter, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Law School Predictor - Results', rect.width / 2, 40);
+
+    ctx.font = '14px Inter, sans-serif';
+    ctx.fillStyle = '#6B7F75';
+    ctx.fillText('law-school-predictor.onrender.com', rect.width / 2, 62);
+
+    let y = 100;
+    const preds = document.querySelectorAll('.result-card');
+    ctx.textAlign = 'left';
+
+    preds.forEach(card => {
+        const name = card.querySelector('.result-school-name')?.textContent?.trim() || '';
+        const prob = card.querySelector('.result-prob')?.textContent?.trim() || '';
+        const cat = card.querySelector('.result-category')?.textContent?.trim() || '';
+
+        // Category color
+        if (cat.toLowerCase() === 'safety') ctx.fillStyle = '#2D9B83';
+        else if (cat.toLowerCase() === 'target') ctx.fillStyle = '#E9A84C';
+        else ctx.fillStyle = '#E76F51';
+
+        ctx.fillRect(20, y - 2, 4, 22);
+
+        ctx.fillStyle = '#1A2420';
+        ctx.font = '600 15px Inter, sans-serif';
+        ctx.fillText(name, 32, y + 14);
+
+        ctx.fillStyle = ctx.fillStyle;
+        ctx.textAlign = 'right';
+        ctx.font = 'bold 16px Inter, sans-serif';
+        if (cat.toLowerCase() === 'safety') ctx.fillStyle = '#1B6B4F';
+        else if (cat.toLowerCase() === 'target') ctx.fillStyle = '#E9A84C';
+        else ctx.fillStyle = '#E76F51';
+        ctx.fillText(prob, rect.width - 20, y + 14);
+        ctx.textAlign = 'left';
+
+        y += 28;
+        if (y > canvas.height / scale - 40) return;
+    });
+
+    // Footer
+    ctx.fillStyle = '#8FA69C';
+    ctx.font = '12px Inter, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Generated by Law School Predictor', rect.width / 2, y + 20);
+
+    canvas.toBlob(blob => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'law-school-predictions.png';
+        a.click();
+        URL.revokeObjectURL(url);
+    }, 'image/png');
+}
+
+// ── Auto-fill from URL params (shareable link) ─────────────────────
+(function loadFromURL() {
+    const params = new URLSearchParams(window.location.search);
+    if (!params.has('lsat')) return; // No shared link params
+
+    if (params.get('lsat')) document.getElementById('lsat').value = params.get('lsat');
+    if (params.get('gpa')) document.getElementById('gpa').value = params.get('gpa');
+    if (params.get('timing')) document.getElementById('timing').value = params.get('timing');
+    if (params.get('softs')) document.getElementById('softs').value = params.get('softs');
+    if (params.get('urm') === '1') document.getElementById('urm').checked = true;
+    if (params.get('we') === '1') document.getElementById('has_we').checked = true;
+    if (params.get('years')) document.getElementById('years_out').value = params.get('years');
+    if (params.get('schools')) {
+        params.get('schools').split(',').forEach(name => {
+            if (ALL_SCHOOLS.find(s => s.name === name)) addSchool(name);
+        });
+    }
+})();
 </script>
 {% endblock %}

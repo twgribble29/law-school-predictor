@@ -128,6 +128,50 @@ function renderT14Grid() {
     });
 }
 
+// ── School Abbreviation Map ────────────────────────────────────────
+const SCHOOL_ALIASES = {
+    'nyu': 'New York University',
+    'ucla': 'University of California\u2014Los Angeles',
+    'uc berkeley': 'University of California\u2014Berkeley',
+    'berkeley': 'University of California\u2014Berkeley',
+    'cal berkeley': 'University of California\u2014Berkeley',
+    'uva': 'University of Virginia',
+    'umich': 'University of Michigan',
+    'upenn': 'University of Pennsylvania',
+    'penn': 'University of Pennsylvania',
+    'uchicago': 'University of Chicago',
+    'chicago': 'University of Chicago',
+    'gulc': 'Georgetown University',
+    'gtown': 'Georgetown University',
+    'byu': 'Brigham Young University',
+    'bu': 'Boston University',
+    'bc': 'Boston College',
+    'wustl': 'Washington University in St. Louis',
+    'wash u': 'Washington University in St. Louis',
+    'unc': 'University of North Carolina',
+    'osu': 'Ohio State University',
+    'ut austin': 'University of Texas at Austin',
+    'ut': 'University of Texas at Austin',
+    'asu': 'Arizona State University',
+    'gw': 'George Washington University',
+    'gwu': 'George Washington University',
+    'gmu': 'George Mason University',
+    'smu': 'Southern Methodist University',
+    'usc': 'University of Southern California',
+    'nd': 'University of Notre Dame',
+    'notre dame': 'University of Notre Dame',
+    'ufl': 'University of Florida',
+    'uga': 'University of Georgia',
+};
+
+function matchesSchool(school, query) {
+    if (school.name.toLowerCase().includes(query)) return true;
+    for (const [alias, fullName] of Object.entries(SCHOOL_ALIASES)) {
+        if (alias.includes(query) && fullName === school.name) return true;
+    }
+    return false;
+}
+
 // ── Search ────────────────────────────────────────────────────────
 const searchInput = document.getElementById('profile-search');
 const dropdown = document.getElementById('profile-dropdown');
@@ -138,7 +182,7 @@ searchInput.addEventListener('input', function() {
     if (query.length < 2) { dropdown.style.display = 'none'; return; }
 
     const matches = ALL_SCHOOLS.filter(s =>
-        s.name.toLowerCase().includes(query)
+        matchesSchool(s, query)
     ).slice(0, 10);
 
     if (matches.length === 0) { dropdown.style.display = 'none'; return; }
@@ -233,6 +277,12 @@ function renderProfile(data) {
     renderScatterPlot(data);
 }
 
+function getOrdinal(n) {
+    const s = ['th', 'st', 'nd', 'rd'];
+    const v = n % 100;
+    return n + (s[(v - 20) % 10] || s[v] || s[0]);
+}
+
 function setMetric(id, value) {
     const el = document.getElementById(`metric-${id}`);
     const bar = document.getElementById(`metric-${id}-bar`);
@@ -241,7 +291,7 @@ function setMetric(id, value) {
         el.classList.add('na');
         bar.style.width = '0%';
     } else {
-        el.textContent = `${value}th`;
+        el.textContent = `${getOrdinal(value)} percentile`;
         el.classList.remove('na');
         bar.style.width = `${value}%`;
     }
@@ -355,7 +405,7 @@ function renderScatterPlot(data) {
         plot_bgcolor: 'white',
         paper_bgcolor: 'white',
         font: { family: 'Inter, sans-serif' },
-        margin: { l: 55, r: 70, t: 10, b: 50 },
+        margin: { l: 55, r: 70, t: 40, b: 50 },
         hovermode: 'closest',
         showlegend: true,
         legend: {
@@ -380,5 +430,12 @@ function renderScatterPlot(data) {
 
 // ── Initialize ────────────────────────────────────────────────────
 renderT14Grid();
+
+// Auto-open school profile if ?open= parameter present
+const urlParams = new URLSearchParams(window.location.search);
+const openSchool = urlParams.get('open');
+if (openSchool) {
+    loadProfile(openSchool);
+}
 </script>
 {% endblock %}

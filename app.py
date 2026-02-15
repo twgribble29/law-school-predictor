@@ -42,8 +42,25 @@ with open(os.path.join(MODEL_DIR, 'school_stats.json'), 'r') as f:
 with open(os.path.join(MODEL_DIR, 'school_profiles.json'), 'r') as f:
     school_profiles = json.load(f)
 
-# T14 schools (by selectivity ranking)
-T14 = school_list[:14]
+# T14 schools ordered by US News 2025 rankings
+T14_ORDERED = [
+    'Yale University',
+    'Stanford University',
+    'University of Chicago',
+    'University of Virginia',
+    'University of Pennsylvania',
+    'Duke University',
+    'Harvard University',
+    'Columbia University',
+    'New York University',
+    'University of California\u2014Berkeley',
+    'University of Michigan',
+    'Northwestern University',
+    'Georgetown University',
+    'Cornell University',
+]
+# Only include schools that are in our dataset
+T14 = [s for s in T14_ORDERED if s in school_list]
 
 # School domain mapping for logos (favicon API)
 SCHOOL_DOMAINS = {
